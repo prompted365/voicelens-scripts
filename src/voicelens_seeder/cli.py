@@ -109,9 +109,35 @@ def init_db(
     yes: YesOption = False,
 ) -> None:
     """Initialize SQLite database with schema."""
-    console.print("🗄️  Initializing VoiceLens database schema...")
-    # TODO: Implement database initialization
-    console.print("✅ Database initialized successfully")
+    from .db import get_db_manager
+    
+    db_path = db or Path.cwd() / "data" / "voicelens.db"
+    console.print(f"🗄️  Initializing VoiceLens database: {db_path}")
+    
+    # Check if database already exists and has data
+    db_manager = get_db_manager(db_path)
+    current_version = db_manager.get_schema_version()
+    
+    if current_version and not yes:
+        console.print(f"⚠️  Database already exists (version {current_version})")
+        import questionary
+        if not questionary.confirm("Reinitialize? This will preserve existing data but update schema.").ask():
+            console.print("Aborted")
+            return
+    
+    # Initialize schema
+    if db_manager.init_schema():
+        # Validate initialization
+        if db_manager.validate_schema():
+            console.print("✅ Database initialized and validated successfully")
+            
+            # Show stats
+            stats = db_manager.get_stats()
+            console.print(f"📊 Database size: {stats.get('database_size_mb', 0):.1f} MB")
+        else:
+            console.print("❌ Schema validation failed after initialization")
+    else:
+        console.print("❌ Database initialization failed")
 
 
 @db_app.command("migrate")
