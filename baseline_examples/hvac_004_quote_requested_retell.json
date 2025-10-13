@@ -1,0 +1,92 @@
+{
+  "call_id": "2ef90647-0dec-41b1-9f41-87d084f854cf",
+  "vcp_version": "0.3",
+  "vcp_payload": {
+    "call": {
+      "call_id": "2ef90647-0dec-41b1-9f41-87d084f854cf",
+      "session_id": "2ef90647-0dec-41b1-9f41-87d084f854cf-session",
+      "provider": "retell",
+      "start_time": "2025-10-07T11:18:10.000Z",
+      "end_time": "2025-10-07T11:20:20.000Z",
+      "duration_sec": 130,
+      "capabilities_invoked": [
+        "crm.create_opportunity",
+        "email_followup"
+      ],
+      "purpose_contract": {
+        "declared_intent": "request_quote",
+        "success_criteria": [
+          {
+            "id": "sc1",
+            "metric": "lead_created",
+            "operator": "==",
+            "value": true
+          }
+        ]
+      }
+    },
+    "outcomes": {
+      "perceived": [
+        {
+          "by": "caller",
+          "at": 1759836020,
+          "sentiment": {
+            "model": "retell-internal",
+            "score": 0.82
+          },
+          "confidence": 0.8
+        }
+      ],
+      "objective": {
+        "status": "success",
+        "scored_criteria": [
+          {
+            "id": "sc1",
+            "met": true,
+            "evidence_ref": "tool_log#crm.create_opportunity"
+          }
+        ],
+        "metrics": {
+          "aht_sec": 130,
+          "first_contact_resolution": true,
+          "interruptions": 0,
+          "handoff_performed": false,
+          "first_response_sec": 1.7,
+          "estimated_value_usd": 638.0
+        },
+        "confidence": 0.8
+      },
+      "perception_gap": {
+        "gap_score": 0.05,
+        "gap_class": "aligned",
+        "drivers": [
+          {
+            "type": "info_request",
+            "weight": 0.5,
+            "note": "additional specs emailed"
+          }
+        ]
+      }
+    },
+    "artifacts": {
+      "recording_url": "https://example.com/rec/2ef90647-0dec-41b1-9f41-87d084f854cf.mp3",
+      "transcript_url": null,
+      "provider_raw_payload_ref": "s3://vcp-raw/retell/2ef90647-0dec-41b1-9f41-87d084f854cf.json"
+    },
+    "custom": {
+      "provider_specific": {
+        "retell": {
+          "channel": "inbound"
+        }
+      },
+      "outcome_hint": "quote_requested",
+      "synthetic": true,
+      "synthetic_recipe": "hvac_standard_v1_2025_10_12"
+    },
+    "audit": {
+      "received_at": "2025-10-07T11:20:21.000Z",
+      "normalized_at": "2025-10-07T11:20:22.000Z",
+      "schema_version": "0.3"
+    }
+  }
+}

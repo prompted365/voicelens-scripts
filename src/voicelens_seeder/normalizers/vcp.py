@@ -10,7 +10,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 from uuid import UUID
 
-from pydantic import BaseModel, Field, validator, root_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 class VCPMode(str, Enum):
@@ -69,7 +69,8 @@ class CallInfo(BaseModel):
     capabilities_invoked: List[str] = Field(default_factory=list)
     purpose_contract: PurposeContract
 
-    @validator('start_time', 'end_time')
+    @field_validator('start_time', 'end_time')
+    @classmethod
     def validate_timestamp(cls, v):
         """Ensure timestamps are in ISO 8601 format."""
         if not v.endswith('Z'):
@@ -158,7 +159,8 @@ class AuditInfo(BaseModel):
     normalized_at: str = Field(..., description="ISO 8601 UTC timestamp")
     schema_version: str = "0.3"
 
-    @validator('received_at', 'normalized_at')
+    @field_validator('received_at', 'normalized_at')
+    @classmethod
     def validate_audit_timestamp(cls, v):
         """Ensure audit timestamps are in ISO 8601 format."""
         if not v.endswith('Z'):
@@ -233,7 +235,8 @@ class VCPWrapperBase(BaseModel):
     call_id: str
     vcp_version: str = "0.3"
 
-    @validator('call_id')
+    @field_validator('call_id')
+    @classmethod
     def validate_call_id(cls, v):
         """Ensure call_id is a valid UUID string."""
         try:
@@ -247,28 +250,27 @@ class VCPWrapperGTM(VCPWrapperBase):
     """Complete VCP wrapper for GTM mode."""
     vcp_payload: VCPPayloadGTM
 
-    @root_validator
-    def validate_call_ids_match(cls, values):
+    @model_validator(mode='after')
+    def validate_call_ids_match(self):
         """Ensure call_id matches between wrapper and payload."""
-        wrapper_id = values.get('call_id')
-        payload = values.get('vcp_payload')
-        if payload and wrapper_id != payload.call.call_id:
-            raise ValueError('call_id mismatch between wrapper and payload')
-        return values
-
+        if hasattr(self.vcp_payload, 'call') and hasattr(self.vcp_payload.call, 'call_id'):
+            if self.call_id != self.vcp_payload.call.call_id:
+                raise ValueError(f'call_id mismatch: wrapper={self.call_id}, payload={self.vcp_payload.call.call_id}')
+        
+        return self
 
 class VCPWrapperFull(VCPWrapperBase):
     """Complete VCP wrapper for full mode."""
     vcp_payload: VCPPayloadFull
 
-    @root_validator
-    def validate_call_ids_match(cls, values):
+    @model_validator(mode='after')
+    def validate_call_ids_match(self):
         """Ensure call_id matches between wrapper and payload."""
-        wrapper_id = values.get('call_id')
-        payload = values.get('vcp_payload')
-        if payload and wrapper_id != payload.call.call_id:
-            raise ValueError('call_id mismatch between wrapper and payload')
-        return values
+        if hasattr(self.vcp_payload, 'call') and hasattr(self.vcp_payload.call, 'call_id'):
+            if self.call_id != self.vcp_payload.call.call_id:
+                raise ValueError(f'call_id mismatch: wrapper={self.call_id}, payload={self.vcp_payload.call.call_id}')
+        
+        return self
 
 
 # ===== Union Types =====

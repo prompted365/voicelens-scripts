@@ -1,0 +1,92 @@
+{
+  "call_id": "5c1fdde7-3963-46a4-9b70-f7eea5477638",
+  "vcp_version": "0.3",
+  "vcp_payload": {
+    "call": {
+      "call_id": "5c1fdde7-3963-46a4-9b70-f7eea5477638",
+      "session_id": "5c1fdde7-3963-46a4-9b70-f7eea5477638-session",
+      "provider": "bland",
+      "start_time": "2025-10-07T22:05:10.000Z",
+      "end_time": "2025-10-07T22:06:41.000Z",
+      "duration_sec": 91,
+      "capabilities_invoked": [
+        "crm.create_task",
+        "sms_notification"
+      ],
+      "purpose_contract": {
+        "declared_intent": "schedule_callback",
+        "success_criteria": [
+          {
+            "id": "sc1",
+            "metric": "callback_window_created",
+            "operator": "==",
+            "value": true
+          }
+        ]
+      }
+    },
+    "outcomes": {
+      "perceived": [
+        {
+          "by": "caller",
+          "at": 1759874801,
+          "sentiment": {
+            "model": "bland-internal",
+            "score": 0.82
+          },
+          "confidence": 0.84
+        }
+      ],
+      "objective": {
+        "status": "success",
+        "scored_criteria": [
+          {
+            "id": "sc1",
+            "met": true,
+            "evidence_ref": "tool_log#crm.create_task"
+          }
+        ],
+        "metrics": {
+          "aht_sec": 91,
+          "first_contact_resolution": true,
+          "interruptions": 0,
+          "handoff_performed": false,
+          "first_response_sec": 1.9,
+          "estimated_value_usd": 191.0
+        },
+        "confidence": 0.84
+      },
+      "perception_gap": {
+        "gap_score": 0.04,
+        "gap_class": "aligned",
+        "drivers": [
+          {
+            "type": "expectation_match",
+            "weight": 0.6,
+            "note": "clear window set"
+          }
+        ]
+      }
+    },
+    "artifacts": {
+      "recording_url": "https://example.com/rec/5c1fdde7-3963-46a4-9b70-f7eea5477638.mp3",
+      "transcript_url": null,
+      "provider_raw_payload_ref": "s3://vcp-raw/bland/5c1fdde7-3963-46a4-9b70-f7eea5477638.json"
+    },
+    "custom": {
+      "provider_specific": {
+        "bland": {
+          "channel": "inbound"
+        }
+      },
+      "outcome_hint": "scheduled_callback",
+      "synthetic": true,
+      "synthetic_recipe": "hvac_standard_v1_2025_10_12"
+    },
+    "audit": {
+      "received_at": "2025-10-07T22:06:42.000Z",
+      "normalized_at": "2025-10-07T22:06:43.000Z",
+      "schema_version": "0.3"
+    }
+  }
+}

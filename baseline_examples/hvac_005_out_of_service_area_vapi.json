@@ -1,0 +1,89 @@
+{
+  "call_id": "53849b3f-f60d-4d24-b73f-5dbadc1d5de9",
+  "vcp_version": "0.3",
+  "vcp_payload": {
+    "call": {
+      "call_id": "53849b3f-f60d-4d24-b73f-5dbadc1d5de9",
+      "session_id": "53849b3f-f60d-4d24-b73f-5dbadc1d5de9-session",
+      "provider": "vapi",
+      "start_time": "2025-10-12T15:03:10.000Z",
+      "end_time": "2025-10-12T15:04:51.000Z",
+      "duration_sec": 101,
+      "capabilities_invoked": [],
+      "purpose_contract": {
+        "declared_intent": "service_request",
+        "success_criteria": [
+          {
+            "id": "sc1",
+            "metric": "task_completion",
+            "operator": "==",
+            "value": true
+          }
+        ]
+      }
+    },
+    "outcomes": {
+      "perceived": [
+        {
+          "by": "caller",
+          "at": 1760281491,
+          "sentiment": {
+            "model": "vapi-internal",
+            "score": 0.48
+          },
+          "confidence": 0.76
+        }
+      ],
+      "objective": {
+        "status": "partial",
+        "scored_criteria": [
+          {
+            "id": "sc1",
+            "met": false,
+            "evidence_ref": "rule#not_service_area"
+          }
+        ],
+        "metrics": {
+          "aht_sec": 101,
+          "first_contact_resolution": false,
+          "interruptions": 0,
+          "handoff_performed": false,
+          "first_response_sec": 2.3,
+          "estimated_value_usd": 0.0
+        },
+        "confidence": 0.76
+      },
+      "perception_gap": {
+        "gap_score": 0.12,
+        "gap_class": "mild_misalignment",
+        "drivers": [
+          {
+            "type": "expectation_mismatch",
+            "weight": 0.7,
+            "note": "zip outside coverage"
+          }
+        ]
+      }
+    },
+    "artifacts": {
+      "recording_url": "https://example.com/rec/53849b3f-f60d-4d24-b73f-5dbadc1d5de9.mp3",
+      "transcript_url": null,
+      "provider_raw_payload_ref": "s3://vcp-raw/vapi/53849b3f-f60d-4d24-b73f-5dbadc1d5de9.json"
+    },
+    "custom": {
+      "provider_specific": {
+        "vapi": {
+          "channel": "inbound"
+        }
+      },
+      "outcome_hint": "out_of_service_area",
+      "synthetic": true,
+      "synthetic_recipe": "hvac_standard_v1_2025_10_12"
+    },
+    "audit": {
+      "received_at": "2025-10-12T15:04:52.000Z",
+      "normalized_at": "2025-10-12T15:04:53.000Z",
+      "schema_version": "0.3"
+    }
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "call_id": "efdf7a92-9388-492f-adc3-6329e3eb520c",
+  "vcp_version": "0.3",
+  "vcp_payload": {
+    "call": {
+      "call_id": "efdf7a92-9388-492f-adc3-6329e3eb520c",
+      "session_id": "efdf7a92-9388-492f-adc3-6329e3eb520c-session",
+      "provider": "retell",
+      "start_time": "2025-10-13T00:06:10.000Z",
+      "end_time": "2025-10-13T00:09:04.000Z",
+      "duration_sec": 174,
+      "capabilities_invoked": [
+        "calendar_api",
+        "priority_flag",
+        "sms_notification"
+      ],
+      "purpose_contract": {
+        "declared_intent": "emergency_service",
+        "success_criteria": [
+          {
+            "id": "sc1",
+            "metric": "priority_booking",
+            "operator": "==",
+            "value": true
+          }
+        ]
+      }
+    },
+    "outcomes": {
+      "perceived": [
+        {
+          "by": "caller",
+          "at": 1760314144,
+          "sentiment": {
+            "model": "retell-internal",
+            "score": 0.75
+          },
+          "confidence": 0.94
+        }
+      ],
+      "objective": {
+        "status": "success",
+        "scored_criteria": [
+          {
+            "id": "sc1",
+            "met": true,
+            "evidence_ref": "tool_log#priority_flag"
+          }
+        ],
+        "metrics": {
+          "aht_sec": 174,
+          "first_contact_resolution": true,
+          "interruptions": 0,
+          "handoff_performed": false,
+          "first_response_sec": 1.9,
+          "estimated_value_usd": 598.0
+        },
+        "confidence": 0.94
+      },
+      "perception_gap": {
+        "gap_score": 0.07,
+        "gap_class": "aligned",
+        "drivers": [
+          {
+            "type": "urgency",
+            "weight": 0.5,
+            "note": "heat out"
+          }
+        ]
+      }
+    },
+    "artifacts": {
+      "recording_url": "https://example.com/rec/efdf7a92-9388-492f-adc3-6329e3eb520c.mp3",
+      "transcript_url": null,
+      "provider_raw_payload_ref": "s3://vcp-raw/retell/efdf7a92-9388-492f-adc3-6329e3eb520c.json"
+    },
+    "custom": {
+      "provider_specific": {
+        "retell": {
+          "channel": "inbound"
+        }
+      },
+      "outcome_hint": "emergency_service",
+      "synthetic": true,
+      "synthetic_recipe": "hvac_standard_v1_2025_10_12"
+    },
+    "audit": {
+      "received_at": "2025-10-13T00:09:05.000Z",
+      "normalized_at": "2025-10-13T00:09:06.000Z",
+      "schema_version": "0.3"
+    }
+  }
+}

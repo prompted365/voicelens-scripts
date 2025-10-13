@@ -1,0 +1,92 @@
+{
+  "call_id": "2e17d6db-3620-4d4d-8dd4-a169f507aed5",
+  "vcp_version": "0.3",
+  "vcp_payload": {
+    "call": {
+      "call_id": "2e17d6db-3620-4d4d-8dd4-a169f507aed5",
+      "session_id": "2e17d6db-3620-4d4d-8dd4-a169f507aed5-session",
+      "provider": "retell",
+      "start_time": "2025-10-10T19:42:10.000Z",
+      "end_time": "2025-10-10T19:45:00.000Z",
+      "duration_sec": 170,
+      "capabilities_invoked": [
+        "calendar_api",
+        "sms_notification"
+      ],
+      "purpose_contract": {
+        "declared_intent": "appointment_booking",
+        "success_criteria": [
+          {
+            "id": "sc1",
+            "metric": "task_completion",
+            "operator": "==",
+            "value": true
+          }
+        ]
+      }
+    },
+    "outcomes": {
+      "perceived": [
+        {
+          "by": "caller",
+          "at": 1760125500,
+          "sentiment": {
+            "model": "retell-internal",
+            "score": 0.82
+          },
+          "confidence": 0.85
+        }
+      ],
+      "objective": {
+        "status": "success",
+        "scored_criteria": [
+          {
+            "id": "sc1",
+            "met": true,
+            "evidence_ref": "tool_log#calendar_api"
+          }
+        ],
+        "metrics": {
+          "aht_sec": 170,
+          "first_contact_resolution": true,
+          "interruptions": 0,
+          "handoff_performed": false,
+          "first_response_sec": 1.8,
+          "estimated_value_usd": 259.0
+        },
+        "confidence": 0.85
+      },
+      "perception_gap": {
+        "gap_score": 0.02,
+        "gap_class": "aligned",
+        "drivers": [
+          {
+            "type": "clarity",
+            "weight": 0.6,
+            "note": "clear slot confirmation"
+          }
+        ]
+      }
+    },
+    "artifacts": {
+      "recording_url": "https://example.com/rec/2e17d6db-3620-4d4d-8dd4-a169f507aed5.mp3",
+      "transcript_url": null,
+      "provider_raw_payload_ref": "s3://vcp-raw/retell/2e17d6db-3620-4d4d-8dd4-a169f507aed5.json"
+    },
+    "custom": {
+      "provider_specific": {
+        "retell": {
+          "channel": "inbound"
+        }
+      },
+      "outcome_hint": "booked_service",
+      "synthetic": true,
+      "synthetic_recipe": "hvac_standard_v1_2025_10_12"
+    },
+    "audit": {
+      "received_at": "2025-10-10T19:45:01.000Z",
+      "normalized_at": "2025-10-10T19:45:02.000Z",
+      "schema_version": "0.3"
+    }
+  }
+}

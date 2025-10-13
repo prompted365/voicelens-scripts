@@ -1,0 +1,91 @@
+{
+  "call_id": "b0e7dfa3-c899-4329-b7e1-6bab43f87940",
+  "vcp_version": "0.3",
+  "vcp_payload": {
+    "call": {
+      "call_id": "b0e7dfa3-c899-4329-b7e1-6bab43f87940",
+      "session_id": "b0e7dfa3-c899-4329-b7e1-6bab43f87940-session",
+      "provider": "retell",
+      "start_time": "2025-09-24T09:18:35.599Z",
+      "end_time": "2025-09-24T09:21:03.599Z",
+      "duration_sec": 148,
+      "capabilities_invoked": [
+        "telephony.transfer"
+      ],
+      "purpose_contract": {
+        "declared_intent": "speak_to_tech",
+        "success_criteria": [
+          {
+            "id": "sc1",
+            "metric": "warm_transfer",
+            "operator": "==",
+            "value": true
+          }
+        ]
+      }
+    },
+    "outcomes": {
+      "perceived": [
+        {
+          "by": "caller",
+          "at": 1758705663,
+          "sentiment": {
+            "model": "retell-internal",
+            "score": 0.79
+          },
+          "confidence": 0.76
+        }
+      ],
+      "objective": {
+        "status": "success",
+        "scored_criteria": [
+          {
+            "id": "sc1",
+            "met": true,
+            "evidence_ref": "tool_log#telephony.transfer"
+          }
+        ],
+        "metrics": {
+          "aht_sec": 148,
+          "first_contact_resolution": true,
+          "interruptions": 1,
+          "handoff_performed": true,
+          "first_response_sec": 2.3,
+          "estimated_value_usd": 376.0
+        },
+        "confidence": 0.76
+      },
+      "perception_gap": {
+        "gap_score": 0.04,
+        "gap_class": "aligned",
+        "drivers": [
+          {
+            "type": "response_latency",
+            "weight": 0.4,
+            "note": "slight delay before transfer"
+          }
+        ]
+      }
+    },
+    "artifacts": {
+      "recording_url": "https://example.com/rec/b0e7dfa3-c899-4329-b7e1-6bab43f87940.mp3",
+      "transcript_url": null,
+      "provider_raw_payload_ref": "s3://vcp-raw/retell/b0e7dfa3-c899-4329-b7e1-6bab43f87940.json"
+    },
+    "custom": {
+      "provider_specific": {
+        "retell": {
+          "channel": "inbound"
+        }
+      },
+      "outcome_hint": "live_transfer",
+      "synthetic": true,
+      "synthetic_recipe": "hvac_standard_v1_2025_10_12"
+    },
+    "audit": {
+      "received_at": "2025-09-24T09:21:04.599Z",
+      "normalized_at": "2025-09-24T09:21:05.599Z",
+      "schema_version": "0.3"
+    }
+  }
+}

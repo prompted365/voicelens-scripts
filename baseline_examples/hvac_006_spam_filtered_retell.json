@@ -1,0 +1,83 @@
+{
+  "call_id": "fef96163-7b3f-4915-a538-37f3491b467d",
+  "vcp_version": "0.3",
+  "vcp_payload": {
+    "call": {
+      "call_id": "fef96163-7b3f-4915-a538-37f3491b467d",
+      "session_id": "fef96163-7b3f-4915-a538-37f3491b467d-session",
+      "provider": "retell",
+      "start_time": "2025-10-06T09:14:10.000Z",
+      "end_time": "2025-10-06T09:14:41.000Z",
+      "duration_sec": 31,
+      "capabilities_invoked": [],
+      "purpose_contract": {
+        "declared_intent": "unknown",
+        "success_criteria": [
+          {
+            "id": "sc1",
+            "metric": "screening",
+            "operator": "==",
+            "value": true
+          }
+        ]
+      }
+    },
+    "outcomes": {
+      "perceived": [
+        {
+          "by": "caller",
+          "at": 1759742081,
+          "sentiment": {
+            "model": "retell-internal",
+            "score": 0.2
+          },
+          "confidence": 0.9
+        }
+      ],
+      "objective": {
+        "status": "filtered",
+        "scored_criteria": [
+          {
+            "id": "sc1",
+            "met": true,
+            "evidence_ref": "heuristic#spam"
+          }
+        ],
+        "metrics": {
+          "aht_sec": 31,
+          "first_contact_resolution": false,
+          "interruptions": 0,
+          "handoff_performed": false,
+          "first_response_sec": 1.9,
+          "estimated_value_usd": 0.0
+        },
+        "confidence": 0.9
+      },
+      "perception_gap": {
+        "gap_score": 0.0,
+        "gap_class": "aligned",
+        "drivers": []
+      }
+    },
+    "artifacts": {
+      "recording_url": "https://example.com/rec/fef96163-7b3f-4915-a538-37f3491b467d.mp3",
+      "transcript_url": null,
+      "provider_raw_payload_ref": "s3://vcp-raw/retell/fef96163-7b3f-4915-a538-37f3491b467d.json"
+    },
+    "custom": {
+      "provider_specific": {
+        "retell": {
+          "channel": "inbound"
+        }
+      },
+      "outcome_hint": "spam_filtered",
+      "synthetic": true,
+      "synthetic_recipe": "hvac_standard_v1_2025_10_12"
+    },
+    "audit": {
+      "received_at": "2025-10-06T09:14:42.000Z",
+      "normalized_at": "2025-10-06T09:14:43.000Z",
+      "schema_version": "0.3"
+    }
+  }
+}

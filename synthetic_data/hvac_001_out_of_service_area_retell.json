@@ -1,0 +1,89 @@
+{
+  "call_id": "3db18dd3-32d2-4baa-8838-1921b057f62a",
+  "vcp_version": "0.3",
+  "vcp_payload": {
+    "call": {
+      "call_id": "3db18dd3-32d2-4baa-8838-1921b057f62a",
+      "session_id": "3db18dd3-32d2-4baa-8838-1921b057f62a-session",
+      "provider": "retell",
+      "start_time": "2025-09-14T15:08:36.386Z",
+      "end_time": "2025-09-14T15:10:13.386Z",
+      "duration_sec": 97,
+      "capabilities_invoked": [],
+      "purpose_contract": {
+        "declared_intent": "service_request",
+        "success_criteria": [
+          {
+            "id": "sc1",
+            "metric": "task_completion",
+            "operator": "==",
+            "value": true
+          }
+        ]
+      }
+    },
+    "outcomes": {
+      "perceived": [
+        {
+          "by": "caller",
+          "at": 1757862613,
+          "sentiment": {
+            "model": "retell-internal",
+            "score": 0.48
+          },
+          "confidence": 0.84
+        }
+      ],
+      "objective": {
+        "status": "partial",
+        "scored_criteria": [
+          {
+            "id": "sc1",
+            "met": false,
+            "evidence_ref": "rule#not_service_area"
+          }
+        ],
+        "metrics": {
+          "aht_sec": 97,
+          "first_contact_resolution": false,
+          "interruptions": 0,
+          "handoff_performed": false,
+          "first_response_sec": 2.0,
+          "estimated_value_usd": 0.0
+        },
+        "confidence": 0.84
+      },
+      "perception_gap": {
+        "gap_score": 0.1,
+        "gap_class": "mild_misalignment",
+        "drivers": [
+          {
+            "type": "expectation_mismatch",
+            "weight": 0.7,
+            "note": "zip outside coverage"
+          }
+        ]
+      }
+    },
+    "artifacts": {
+      "recording_url": "https://example.com/rec/3db18dd3-32d2-4baa-8838-1921b057f62a.mp3",
+      "transcript_url": null,
+      "provider_raw_payload_ref": "s3://vcp-raw/retell/3db18dd3-32d2-4baa-8838-1921b057f62a.json"
+    },
+    "custom": {
+      "provider_specific": {
+        "retell": {
+          "channel": "inbound"
+        }
+      },
+      "outcome_hint": "out_of_service_area",
+      "synthetic": true,
+      "synthetic_recipe": "hvac_standard_v1_2025_10_12"
+    },
+    "audit": {
+      "received_at": "2025-09-14T15:10:14.386Z",
+      "normalized_at": "2025-09-14T15:10:15.386Z",
+      "schema_version": "0.3"
+    }
+  }
+}

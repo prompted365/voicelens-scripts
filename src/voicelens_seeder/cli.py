@@ -189,6 +189,8 @@ def generate_conversations(
     start_days_ago: int = typer.Option(30, help="Generate data starting N days ago"),
     vcp_mode: str = typer.Option("gtm", help="VCP mode: gtm or full"),
     out: Optional[Path] = typer.Option(None, help="Output directory for generated files"),
+    provider: str = typer.Option("all", help="Provider: retell, vapi, bland, or all"),
+    seed: Optional[int] = typer.Option(None, help="Random seed for reproducible output"),
     dry_run: DryRunOption = False,
 ) -> None:
     """Generate synthetic conversation data."""
@@ -196,13 +198,113 @@ def generate_conversations(
     console.print(f"   Profile: {profile or 'default'}")
     console.print(f"   VCP Mode: {vcp_mode}")
     console.print(f"   Time Range: {start_days_ago} days ago to now")
+    console.print(f"   Provider: {provider}")
     
     if dry_run:
         console.print("🔍 [yellow]DRY RUN - no files will be created[/yellow]")
         return
+    
+    try:
+        from datetime import datetime, timezone, timedelta
+        from .generator.synthetic import VCPSyntheticGenerator
+        from .normalizers.vcp import Provider, VCPMode
         
-    # TODO: Implement conversation generation
-    console.print("✅ Conversations generated successfully")
+        # Parse providers
+        if provider.lower() == "all":
+            providers = [Provider.RETELL, Provider.VAPI, Provider.BLAND]
+        else:
+            try:
+                providers = [Provider(provider.lower())]
+            except ValueError:
+                console.print(f"❌ Invalid provider: {provider}", style="red")
+                console.print("Available providers: retell, vapi, bland, all")
+                raise typer.Exit(1)
+        
+        # Parse VCP mode
+        try:
+            mode = VCPMode(vcp_mode.lower())
+        except ValueError:
+            console.print(f"❌ Invalid VCP mode: {vcp_mode}", style="red")
+            console.print("Available modes: gtm, full")
+            raise typer.Exit(1)
+        
+        # Initialize generator
+        generator = VCPSyntheticGenerator(seed=seed)
+        
+        # Calculate time range
+        end_time = datetime.now(timezone.utc)
+        start_time = end_time - timedelta(days=start_days_ago)
+        
+        # Generate data
+        batch = list(generator.generate_call_batch(
+            count=count,
+            start_date=start_time,
+            end_date=end_time,
+            providers=providers,
+            vcp_mode=mode
+        ))
+        
+        # Save to output directory
+        if out:
+            out.mkdir(parents=True, exist_ok=True)
+            generator.save_examples_as_json(batch, out)
+            console.print(f"💾 Saved {len(batch)} conversations to {out}")
+        else:
+            # Save to default location
+            output_dir = Path("./synthetic_data")
+            output_dir.mkdir(parents=True, exist_ok=True)
+            generator.save_examples_as_json(batch, output_dir)
+            console.print(f"💾 Saved {len(batch)} conversations to {output_dir}")
+        
+        console.print("✅ Conversations generated successfully")
+        
+    except Exception as e:
+        console.print(f"❌ Generation failed: {e}", style="red")
+        raise typer.Exit(1)
+
+
+@generate_app.command("baseline")
+def generate_baseline(
+    out: Optional[Path] = typer.Option(None, help="Output directory for generated files"),
+    seed: Optional[int] = typer.Option(42, help="Random seed for reproducible output"),
+) -> None:
+    """Generate the 8 baseline HVAC examples matching your curl commands."""
+    console.print("🛠️ Generating 8 baseline HVAC examples...")
+    
+    try:
+        from .generator.synthetic import VCPSyntheticGenerator
+        
+        # Initialize generator with seed for reproducibility
+        generator = VCPSyntheticGenerator(seed=seed)
+        
+        # Generate the 8 baseline examples
+        examples = generator.generate_baseline_examples()
+        
+        # Save to output directory
+        if out:
+            out.mkdir(parents=True, exist_ok=True)
+            generator.save_examples_as_json(examples, out)
+            console.print(f"💾 Saved {len(examples)} baseline examples to {out}")
+        else:
+            # Save to default location
+            output_dir = Path("./baseline_examples")
+            output_dir.mkdir(parents=True, exist_ok=True)
+            generator.save_examples_as_json(examples, output_dir)
+            console.print(f"💾 Saved {len(examples)} baseline examples to {output_dir}")
+        
+        console.print("✅ Baseline examples generated successfully")
+        
+        # Show summary
+        console.print("\n📊 Baseline Examples Summary:")
+        for i, example in enumerate(examples, 1):
+            scenario = example.vcp_payload.custom.outcome_hint
+            provider = example.vcp_payload.call.provider
+            duration = example.vcp_payload.call.duration_sec
+            console.print(f"  {i}. {scenario} ({provider}) - {duration}s")
+            
+    except Exception as e:
+        console.print(f"❌ Generation failed: {e}", style="red")
+        raise typer.Exit(1)
 
 
 # Demo commands
