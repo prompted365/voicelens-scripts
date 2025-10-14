@@ -1,0 +1,34 @@
+# VoiceLens Scripts Dependencies
+
+# Core framework
+flask
+flask-sqlalchemy
+flask-cors
+
+# Data validation and serialization
+pydantic
+
+# HTTP requests and web scraping
+requests
+feedparser
+
+# Database
+# sqlite3 is built into Python
+psycopg2-binary  # Optional for PostgreSQL
+
+# Utilities  
+python-dotenv
+python-dateutil
+
+# Monitoring and notifications
+schedule
+websockets  # For WebSocket monitoring
+
+# Development and testing (optional)
+pytest
+pytest-cov
+black
+flake8
+
+# Security (optional)
+cryptography

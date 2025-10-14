@@ -1,10 +1,10 @@
 {
-  "call_id": "fef96163-7b3f-4915-a538-37f3491b467d",
+  "call_id": "4cb4c870-93f7-4b5e-9592-9359d313f997",
   "vcp_version": "0.3",
   "vcp_payload": {
     "call": {
-      "call_id": "fef96163-7b3f-4915-a538-37f3491b467d",
-      "session_id": "fef96163-7b3f-4915-a538-37f3491b467d-session",
+      "call_id": "4cb4c870-93f7-4b5e-9592-9359d313f997",
+      "session_id": "4cb4c870-93f7-4b5e-9592-9359d313f997-session",
       "provider": "retell",
       "start_time": "2025-10-06T09:14:10.000Z",
       "end_time": "2025-10-06T09:14:41.000Z",
@@ -60,9 +60,9 @@
       }
     },
     "artifacts": {
-      "recording_url": "https://example.com/rec/fef96163-7b3f-4915-a538-37f3491b467d.mp3",
+      "recording_url": "https://example.com/rec/4cb4c870-93f7-4b5e-9592-9359d313f997.mp3",
       "transcript_url": null,
-      "provider_raw_payload_ref": "s3://vcp-raw/retell/fef96163-7b3f-4915-a538-37f3491b467d.json"
+      "provider_raw_payload_ref": "s3://vcp-raw/retell/4cb4c870-93f7-4b5e-9592-9359d313f997.json"
     },
     "custom": {
       "provider_specific": {

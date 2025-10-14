@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoiceLens Operations Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .provider-card { transition: all 0.3s ease; }
+        .provider-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+        .status-indicator.healthy { background-color: #10B981; }
+        .status-indicator.unhealthy { background-color: #EF4444; }
+        .status-indicator { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <div class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-4">
+                    <h1 class="text-2xl font-bold text-gray-900">🎙️ VoiceLens Operations</h1>
+                    <span class="bg-blue-100 text-blue-800 text-sm font-medium px-2.5 py-0.5 rounded">Internal Dashboard</span>
+                </div>
+                <div class="flex space-x-2">
+                    <button id="refresh-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                        Refresh Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Stats Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+                <div class="p-5">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="text-2xl">🏢</div>
+                        </div>
+                        <div class="ml-5 w-0 flex-1">
+                            <dl>
+                                <dt class="text-sm font-medium text-gray-500 truncate">Total Providers</dt>
+                                <dd class="text-lg font-medium text-gray-900" id="total-providers">-</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+                <div class="p-5">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="text-2xl">🔄</div>
+                        </div>
+                        <div class="ml-5 w-0 flex-1">
+                            <dl>
+                                <dt class="text-sm font-medium text-gray-500 truncate">Active Monitoring</dt>
+                                <dd class="text-lg font-medium text-gray-900" id="active-monitors">-</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+                <div class="p-5">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="text-2xl">📊</div>
+                        </div>
+                        <div class="ml-5 w-0 flex-1">
+                            <dl>
+                                <dt class="text-sm font-medium text-gray-500 truncate">VCP Transformations</dt>
+                                <dd class="text-lg font-medium text-gray-900" id="total-transformations">-</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+                <div class="p-5">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="text-2xl">✅</div>
+                        </div>
+                        <div class="ml-5 w-0 flex-1">
+                            <dl>
+                                <dt class="text-sm font-medium text-gray-500 truncate">Test Success Rate</dt>
+                                <dd class="text-lg font-medium text-gray-900" id="success-rate">-</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="border-b border-gray-200 mb-6">
+            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                <button class="tab-btn border-blue-500 text-blue-600 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm" data-tab="providers">
+                    Providers
+                </button>
+                <button class="tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm" data-tab="monitoring">
+                    Monitoring
+                </button>
+                <button class="tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm" data-tab="testing">
+                    Webhook Testing
+                </button>
+                <button class="tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm" data-tab="analytics">
+                    Analytics
+                </button>
+            </nav>
+        </div>
+
+        <!-- Tab Content -->
+        <div id="providers-tab" class="tab-content">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="providers-grid">
+                <!-- Provider cards will be loaded here -->
+            </div>
+        </div>
+
+        <div id="monitoring-tab" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white shadow rounded-lg p-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Recent Changes</h3>
+                    <div id="recent-changes" class="space-y-4">
+                        <!-- Recent changes will be loaded here -->
+                    </div>
+                </div>
+                <div class="bg-white shadow rounded-lg p-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Service Health</h3>
+                    <div id="service-health" class="space-y-4">
+                        <!-- Service health will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="testing-tab" class="tab-content hidden">
+            <div class="bg-white shadow rounded-lg p-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Webhook Testing</h3>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Provider</label>
+                        <select id="test-provider" class="block w-full border-gray-300 rounded-md shadow-sm">
+                            <option value="">Select a provider</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Test Type</label>
+                        <select id="test-type" class="block w-full border-gray-300 rounded-md shadow-sm">
+                            <option value="payload">Payload Transformation</option>
+                            <option value="signature">Signature Validation</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Webhook Payload (JSON)</label>
+                    <textarea id="test-payload" rows="10" class="block w-full border-gray-300 rounded-md shadow-sm font-mono text-sm" placeholder="Enter webhook payload JSON here..."></textarea>
+                </div>
+                <div class="mt-4 flex justify-between">
+                    <button id="load-example" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                        Load Example
+                    </button>
+                    <button id="test-webhook" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                        Run Test
+                    </button>
+                </div>
+                <div id="test-results" class="mt-6 hidden">
+                    <h4 class="text-md font-medium text-gray-900 mb-2">Test Results</h4>
+                    <pre id="test-output" class="bg-gray-100 p-4 rounded-md text-sm overflow-auto max-h-96"></pre>
+                </div>
+            </div>
+        </div>
+
+        <div id="analytics-tab" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white shadow rounded-lg p-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Transformation Performance</h3>
+                    <canvas id="performance-chart" width="400" height="200"></canvas>
+                </div>
+                <div class="bg-white shadow rounded-lg p-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Test Success Rates</h3>
+                    <canvas id="success-chart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Application state
+        let providers = [];
+        let currentTab = 'providers';
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProviders();
+            setupTabSwitching();
+            setupEventHandlers();
+            loadDashboardData();
+        });
+
+        // Tab switching
+        function setupTabSwitching() {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const tabName = this.dataset.tab;
+                    switchTab(tabName);
+                });
+            });
+        }
+
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('border-blue-500', 'text-blue-600');
+                btn.classList.add('border-transparent', 'text-gray-500');
+            });
+            
+            document.querySelector(`[data-tab="${tabName}"]`).classList.remove('border-transparent', 'text-gray-500');
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('border-blue-500', 'text-blue-600');
+
+            // Update content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            document.getElementById(`${tabName}-tab`).classList.remove('hidden');
+            currentTab = tabName;
+
+            // Load tab-specific data
+            if (tabName === 'monitoring') {
+                loadMonitoringData();
+            } else if (tabName === 'analytics') {
+                loadAnalyticsData();
+            }
+        }
+
+        // Event handlers
+        function setupEventHandlers() {
+            document.getElementById('refresh-btn').addEventListener('click', refreshAllData);
+            document.getElementById('test-webhook').addEventListener('click', runWebhookTest);
+            document.getElementById('load-example').addEventListener('click', loadExamplePayload);
+        }
+
+        // Load providers
+        async function loadProviders() {
+            try {
+                const response = await fetch('/api/providers');
+                providers = await response.json();
+                renderProviders();
+                populateProviderSelect();
+                updateStats();
+            } catch (error) {
+                console.error('Error loading providers:', error);
+            }
+        }
+
+        function renderProviders() {
+            const grid = document.getElementById('providers-grid');
+            grid.innerHTML = providers.map(provider => `
+                <div class="provider-card bg-white shadow rounded-lg p-6 cursor-pointer" onclick="viewProvider('${provider.name}')">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-medium text-gray-900">${provider.name}</h3>
+                        <span class="status-indicator ${provider.status_page ? 'healthy' : 'unknown'}"></span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-2">Company: ${provider.company}</p>
+                    <p class="text-sm text-gray-600 mb-2">Events: ${provider.supported_events.length}</p>
+                    <p class="text-sm text-gray-600 mb-4">VCP Fields: ${provider.vcp_mapping_fields}</p>
+                    <div class="flex justify-between text-xs text-gray-500">
+                        <span>Auth: ${provider.webhook_auth.method || 'None'}</span>
+                        <span>Updated: ${provider.last_updated ? new Date(provider.last_updated).toLocaleDateString() : 'Never'}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function populateProviderSelect() {
+            const select = document.getElementById('test-provider');
+            select.innerHTML = '<option value="">Select a provider</option>' + 
+                providers.map(p => `<option value="${p.name.toLowerCase().replace(/\\s+/g, '_')}">${p.name}</option>`).join('');
+        }
+
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                const [transformStats, testResults] = await Promise.all([
+                    fetch('/api/analytics/transformation-stats').then(r => r.json()),
+                    fetch('/api/analytics/test-results').then(r => r.json())
+                ]);
+
+                document.getElementById('total-providers').textContent = providers.length;
+                document.getElementById('active-monitors').textContent = providers.filter(p => p.status_page).length;
+                document.getElementById('total-transformations').textContent = transformStats.total_transformations || 0;
+                
+                const overallSuccessRate = testResults.test_summary ? 
+                    testResults.test_summary.reduce((acc, test) => acc + test.success_rate, 0) / testResults.test_summary.length : 0;
+                document.getElementById('success-rate').textContent = `${overallSuccessRate.toFixed(1)}%`;
+                
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+
+        // Load monitoring data
+        async function loadMonitoringData() {
+            try {
+                const [changes, health] = await Promise.all([
+                    fetch('/api/monitoring/changes').then(r => r.json()),
+                    fetch('/api/monitoring/health').then(r => r.json())
+                ]);
+
+                // Render recent changes
+                const changesContainer = document.getElementById('recent-changes');
+                if (changes.length > 0) {
+                    changesContainer.innerHTML = changes.slice(0, 10).map(change => `
+                        <div class="border-l-4 ${getSeverityColor(change.severity)} bg-gray-50 p-4">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-900">${change.title}</p>
+                                    <p class="text-sm text-gray-600">${change.provider} - ${change.change_type}</p>
+                                    <p class="text-xs text-gray-500">${new Date(change.detected_at).toLocaleString()}</p>
+                                </div>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getSeverityBadge(change.severity)}">
+                                    ${change.severity}
+                                </span>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    changesContainer.innerHTML = '<p class="text-gray-500">No recent changes detected.</p>';
+                }
+
+                // Render service health
+                const healthContainer = document.getElementById('service-health');
+                if (health.length > 0) {
+                    healthContainer.innerHTML = health.map(service => `
+                        <div class="flex items-center justify-between p-3 border rounded">
+                            <div>
+                                <p class="text-sm font-medium text-gray-900">${service.provider}</p>
+                                <p class="text-xs text-gray-500">${service.endpoint}</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="status-indicator ${service.is_healthy ? 'healthy' : 'unhealthy'}"></span>
+                                <span class="text-sm ${service.is_healthy ? 'text-green-600' : 'text-red-600'}">${service.is_healthy ? 'Healthy' : 'Unhealthy'}</span>
+                                <p class="text-xs text-gray-500">${service.response_time_ms?.toFixed(0)}ms</p>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    healthContainer.innerHTML = '<p class="text-gray-500">No service health data available.</p>';
+                }
+
+            } catch (error) {
+                console.error('Error loading monitoring data:', error);
+            }
+        }
+
+        // Load analytics data and render charts
+        async function loadAnalyticsData() {
+            try {
+                const [transformStats, testResults] = await Promise.all([
+                    fetch('/api/analytics/transformation-stats').then(r => r.json()),
+                    fetch('/api/analytics/test-results').then(r => r.json())
+                ]);
+
+                renderPerformanceChart(transformStats);
+                renderSuccessChart(testResults);
+            } catch (error) {
+                console.error('Error loading analytics data:', error);
+            }
+        }
+
+        function renderPerformanceChart(stats) {
+            const ctx = document.getElementById('performance-chart').getContext('2d');
+            const providerNames = Object.keys(stats.provider_breakdown || {});
+            const avgTimes = providerNames.map(name => stats.provider_breakdown[name].avg_time_ms);
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: providerNames,
+                    datasets: [{
+                        label: 'Avg Transformation Time (ms)',
+                        data: avgTimes,
+                        backgroundColor: 'rgba(59, 130, 246, 0.6)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        function renderSuccessChart(testResults) {
+            const ctx = document.getElementById('success-chart').getContext('2d');
+            const testData = testResults.test_summary || [];
+            const providers = [...new Set(testData.map(t => t.provider))];
+            const successRates = providers.map(provider => {
+                const providerTests = testData.filter(t => t.provider === provider);
+                return providerTests.reduce((acc, test) => acc + test.success_rate, 0) / providerTests.length;
+            });
+
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: providers,
+                    datasets: [{
+                        data: successRates,
+                        backgroundColor: [
+                            'rgba(34, 197, 94, 0.6)',
+                            'rgba(59, 130, 246, 0.6)',
+                            'rgba(168, 85, 247, 0.6)',
+                            'rgba(251, 191, 36, 0.6)',
+                            'rgba(239, 68, 68, 0.6)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+
+        // Webhook testing
+        async function runWebhookTest() {
+            const provider = document.getElementById('test-provider').value;
+            const testType = document.getElementById('test-type').value;
+            const payload = document.getElementById('test-payload').value;
+
+            if (!provider || !payload) {
+                alert('Please select a provider and enter a payload');
+                return;
+            }
+
+            try {
+                const payloadObj = JSON.parse(payload);
+                const response = await fetch('/api/webhook-test', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ provider, payload: payloadObj })
+                });
+
+                const result = await response.json();
+                showTestResults(result);
+            } catch (error) {
+                showTestResults({ error: error.message });
+            }
+        }
+
+        async function loadExamplePayload() {
+            const provider = document.getElementById('test-provider').value;
+            if (!provider) {
+                alert('Please select a provider first');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/providers/${provider}`);
+                const providerData = await response.json();
+                
+                if (providerData.webhook_schemas && providerData.webhook_schemas.length > 0) {
+                    const example = providerData.webhook_schemas[0].example_payload;
+                    document.getElementById('test-payload').value = JSON.stringify(example, null, 2);
+                } else {
+                    // Fallback examples for providers
+                    const fallbackExamples = {
+                        'assistable': {
+                            "call_id": "assistable_demo_123",
+                            "call_type": "outbound_sales",
+                            "direction": "outbound",
+                            "to": "+1234567890",
+                            "from": "+1987654321",
+                            "user_sentiment": "positive",
+                            "call_summary": "Customer showed interest in AI solutions",
+                            "call_completion": true,
+                            "assistant_task_completion": true,
+                            "call_time_seconds": 185,
+                            "start_timestamp": 1703001600,
+                            "end_timestamp": 1703001785,
+                            "full_transcript": "Assistant: Hello! How can I help you today?\\nCustomer: Hi, I'm interested in your AI solutions.",
+                            "extractions": {
+                                "customer_interest_level": "high",
+                                "product_interest": "ai_solutions",
+                                "budget_range": "$1000+",
+                                "decision_maker": true,
+                                "purchase_timeline": "within_30_days"
+                            }
+                        }
+                    };
+                    
+                    if (fallbackExamples[provider]) {
+                        document.getElementById('test-payload').value = JSON.stringify(fallbackExamples[provider], null, 2);
+                    } else {
+                        alert('No example payload available for this provider');
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading example:', error);
+                alert('Error loading example payload');
+            }
+        }
+
+        function showTestResults(result) {
+            const resultsDiv = document.getElementById('test-results');
+            const output = document.getElementById('test-output');
+            
+            resultsDiv.classList.remove('hidden');
+            output.textContent = JSON.stringify(result, null, 2);
+        }
+
+        // Utility functions
+        function getSeverityColor(severity) {
+            const colors = {
+                'low': 'border-green-400',
+                'medium': 'border-yellow-400',
+                'high': 'border-orange-400',
+                'critical': 'border-red-400'
+            };
+            return colors[severity] || 'border-gray-400';
+        }
+
+        function getSeverityBadge(severity) {
+            const badges = {
+                'low': 'bg-green-100 text-green-800',
+                'medium': 'bg-yellow-100 text-yellow-800',
+                'high': 'bg-orange-100 text-orange-800',
+                'critical': 'bg-red-100 text-red-800'
+            };
+            return badges[severity] || 'bg-gray-100 text-gray-800';
+        }
+
+        function viewProvider(providerName) {
+            // This would open a detailed provider view
+            alert(`Provider details for ${providerName} - Feature coming soon!`);
+        }
+
+        function refreshAllData() {
+            location.reload();
+        }
+    </script>
+</body>
+</html>

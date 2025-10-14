@@ -198,3 +198,17 @@ examples/vcp/*.json
 *.db-shm
 logs/
 .voicelens/
+
+# VoiceLens specific
+synthetic_60d_data/
+reports/*.html
+reports/*.json
+voicelens_ops.db
+*.sqlite
+*.sqlite3
+
+# Virtual environment (should never be committed)
+venv/
+.venv/
+env/
+.env/
