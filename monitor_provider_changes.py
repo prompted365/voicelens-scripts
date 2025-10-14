@@ -306,6 +306,10 @@ class ProviderMonitor:
             status_code = response.status_code
             response_time = response.elapsed.total_seconds()
             
+            # API endpoints are considered healthy if they respond with expected codes
+            # (including auth errors which indicate the API is running)
+            healthy_codes = [200, 400, 401, 403, 405, 422]
+            
             # Check if this is a significant status change
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()

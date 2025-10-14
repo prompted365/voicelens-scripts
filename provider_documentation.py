@@ -253,6 +253,8 @@ class VoiceAIProviderRegistry:
                 website="https://elevenlabs.io",
                 docs_url="https://elevenlabs.io/docs",
                 api_base_url="https://api.elevenlabs.io",
+                status_page="https://status.elevenlabs.io",
+                rss_feed="https://status.elevenlabs.io/feed.rss",
                 webhook_auth=WebhookAuthConfig(
                     method=AuthMethod.HMAC_SHA256,
                     header_name="elevenlabs-signature",
@@ -366,6 +368,7 @@ class VoiceAIProviderRegistry:
                 website="https://assistable.ai",
                 docs_url="https://docs.assistable.ai",
                 api_base_url="https://api.assistable.ai",
+                status_page="https://status.assistable.ai",
                 webhook_auth=WebhookAuthConfig(
                     method=AuthMethod.API_KEY_HEADER,
                     header_name="Authorization",

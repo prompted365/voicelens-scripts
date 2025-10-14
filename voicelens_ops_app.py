@@ -345,7 +345,8 @@ def get_monitoring_health():
                     endpoint = provider.status_page
                 elif provider.api_base_url:
                     resp = requests.get(provider.api_base_url, timeout=5)
-                    is_healthy = resp.status_code in [200, 401, 403]  # API might require auth
+                    # API endpoints are healthy if they respond (even with auth errors)
+                    is_healthy = resp.status_code in [200, 400, 401, 403, 405, 422]  # These indicate the API is running
                     endpoint = provider.api_base_url
                 else:
                     is_healthy = True  # No endpoint to check
@@ -353,10 +354,16 @@ def get_monitoring_health():
                 
                 response_time = (datetime.now() - response_time_start).total_seconds() * 1000
                 
-            except:
+            except requests.exceptions.RequestException as e:
                 is_healthy = False
                 response_time = 0
                 endpoint = provider.status_page or provider.api_base_url or "N/A"
+                logger.debug(f"Health check failed for {provider.name} at {endpoint}: {e}")
+            except Exception as e:
+                is_healthy = False
+                response_time = 0
+                endpoint = provider.status_page or provider.api_base_url or "N/A"
+                logger.debug(f"Unexpected error in health check for {provider.name}: {e}")
             
             health_data.append({
                 'provider': provider.name,
