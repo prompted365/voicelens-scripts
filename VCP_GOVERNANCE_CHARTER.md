@@ -233,7 +233,7 @@ vcp-compatibility-tests/
 - External security advisor (if needed)
 
 ### 6.2 Vulnerability Management
-1. **Private Disclosure**: info@e.integrate.cloud
+1. **Private Disclosure**: See [CONTACT-US.md](./CONTACT-US.md) for current security contact information
 2. **Assessment**: 48-hour initial assessment
 3. **Coordination**: Cross-implementation impact analysis
 4. **Patch Development**: Coordinated fix development
@@ -250,8 +250,8 @@ vcp-compatibility-tests/
 
 ### 7.1 Communication Channels
 - **GitHub Discussions**: Technical discussions and proposals
-- **Discord Server**: Community chat and real-time support
-- **Monthly Community Calls**: Public progress updates and Q&A
+- **Discord Server**: Community chat and real-time support (planned - see [LOGISTICS.md](./LOGISTICS.md))
+- **Monthly Community Calls**: Public progress updates and Q&A (planned - see [LOGISTICS.md](./LOGISTICS.md))
 - **Documentation Site**: Centralized documentation hub
 
 ### 7.2 Contribution Guidelines
@@ -322,10 +322,13 @@ vcp-compatibility-tests/
 ## 11. Operating Procedures
 
 ### 11.1 Meeting Schedules
-- **TSC**: Monthly, first Tuesday, 2pm UTC
-- **Schema WG**: Bi-weekly, alternating with implementation WGs
-- **Implementation WGs**: Bi-weekly, coordinated scheduling
-- **Community Calls**: Monthly, last Friday, 4pm UTC
+
+⚠️ **Note**: Meeting schedules are planned but not yet active. See [LOGISTICS.md](./LOGISTICS.md) for current implementation status.
+
+- **TSC**: Monthly, first Tuesday, 2pm UTC (planned)
+- **Schema WG**: Bi-weekly, alternating with implementation WGs (planned)
+- **Implementation WGs**: Bi-weekly, coordinated scheduling (planned)
+- **Community Calls**: Monthly, last Friday, 4pm UTC (planned)
 
 ### 11.2 Decision Records
 - **ADR Format**: Architecture Decision Records for all major decisions

@@ -295,11 +295,11 @@ Starting with v1.0, changes will follow:
 ### Community
 - **GitHub Issues**: Bug reports and feature requests
 - **RFC Process**: Proposal and discussion forum  
-- **Developer Discord**: Real-time community support
-- **Monthly Calls**: Community sync and roadmap updates
+- **Contact Information**: See [CONTACT-US.md](./CONTACT-US.md) for all support options
+- **Community Sync**: See [LOGISTICS.md](./LOGISTICS.md) for planned meeting schedules (not yet active)
 
 ---
 
 **Migration Deadline**: v0.3 support continues indefinitely. v0.4 systems should migrate to v0.5 by December 2025.
 
-**Questions?** Open an issue or join our developer community at [VoiceLens Discord](https://discord.gg/voicelens)
+**Questions?** See [CONTACT-US.md](./CONTACT-US.md) for all available support channels.
