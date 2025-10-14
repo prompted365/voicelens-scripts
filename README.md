@@ -477,7 +477,7 @@ pytest --cov=. --cov-report=html
 - **Documentation**: Complete guides in this repository
 - **Issues**: [GitHub Issues](https://github.com/your-org/voicelens-scripts/issues)
 - **Discord**: [VoiceLens Community](https://discord.gg/voicelens)
-- **Email**: voicelens-support@yourdomain.com
+- **Email**: info@e.integrate.cloud
 
 ## License
 

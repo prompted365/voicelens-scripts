@@ -1,6 +1,6 @@
 # VoiceLens Scripts - Complete Documentation
 
-**Generated**: 2025-10-14 16:21:33 UTC  
+**Generated**: 2025-10-14 16:25:49 UTC  
 **Total Files**: 18  
 **Purpose**: Complete documentation context for LLM consumption
 
@@ -43,7 +43,7 @@ reports/
 📄 FILE: docs/README.md
 📝 TITLE: Voice Context Protocol (VCP) System - Complete Documentation
 📊 SIZE: 16,721 bytes
-⏰ PROCESSED: 2025-10-14 16:21:33 UTC
+⏰ PROCESSED: 2025-10-14 16:25:49 UTC
 ================================================================================
 
 # Voice Context Protocol (VCP) System - Complete Documentation
@@ -544,7 +544,7 @@ This documentation and reference implementation are provided under the MIT Licen
 📄 FILE: docs/VCP_SYSTEM_OVERVIEW.md
 📝 TITLE: Voice Context Protocol (VCP) System Documentation
 📊 SIZE: 25,309 bytes
-⏰ PROCESSED: 2025-10-14 16:21:33 UTC
+⏰ PROCESSED: 2025-10-14 16:25:49 UTC
 ================================================================================
 
 # Voice Context Protocol (VCP) System Documentation
@@ -1267,7 +1267,7 @@ This comprehensive documentation provides everything needed to understand, imple
 📄 FILE: docs/VCP_SCHEMA_SPECIFICATION.md
 📝 TITLE: VCP Schema v0.5 - Complete Specification
 📊 SIZE: 24,347 bytes
-⏰ PROCESSED: 2025-10-14 16:21:33 UTC
+⏰ PROCESSED: 2025-10-14 16:25:49 UTC
 ================================================================================
 
 # VCP Schema v0.5 - Complete Specification
@@ -1884,7 +1884,7 @@ This comprehensive specification provides everything needed to implement VCP v0.
 📄 FILE: docs/PROVIDER_INTEGRATION_GUIDE.md
 📝 TITLE: Provider Integration & Mapping Implementation Guide
 📊 SIZE: 27,147 bytes
-⏰ PROCESSED: 2025-10-14 16:21:33 UTC
+⏰ PROCESSED: 2025-10-14 16:25:49 UTC
 ================================================================================
 
 # Provider Integration & Mapping Implementation Guide
@@ -2677,7 +2677,7 @@ This comprehensive guide provides everything needed to integrate any voice AI pr
 📄 FILE: docs/DEPLOYMENT_OPERATIONS_GUIDE.md
 📝 TITLE: VCP System Deployment & Operations Guide
 📊 SIZE: 24,088 bytes
-⏰ PROCESSED: 2025-10-14 16:21:33 UTC
+⏰ PROCESSED: 2025-10-14 16:25:49 UTC
 ================================================================================
 
 # VCP System Deployment & Operations Guide
@@ -3575,8 +3575,8 @@ This comprehensive deployment and operations guide provides everything needed to
 ================================================================================
 📄 FILE: README.md
 📝 TITLE: VoiceLens Scripts
-📊 SIZE: 13,019 bytes
-⏰ PROCESSED: 2025-10-14 16:21:33 UTC
+📊 SIZE: 13,009 bytes
+⏰ PROCESSED: 2025-10-14 16:25:49 UTC
 ================================================================================
 
 # VoiceLens Scripts
@@ -4040,7 +4040,7 @@ pytest --cov=. --cov-report=html
 - **Documentation**: Complete guides in this repository
 - **Issues**: [GitHub Issues](https://github.com/your-org/voicelens-scripts/issues)
 - **Discord**: [VoiceLens Community](https://discord.gg/voicelens)
-- **Email**: voicelens-support@yourdomain.com
+- **Email**: info@e.integrate.cloud
 
 ## License
 
@@ -4058,7 +4058,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 📄 FILE: ASSISTABLE_AI_INTEGRATION.md
 📝 TITLE: Assistable.ai Integration with VCP v0.5
 📊 SIZE: 10,299 bytes
-⏰ PROCESSED: 2025-10-14 16:21:33 UTC
+⏰ PROCESSED: 2025-10-14 16:25:49 UTC
 ================================================================================
 
 # Assistable.ai Integration with VCP v0.5
@@ -4398,7 +4398,7 @@ For Assistable.ai integration issues:
 📄 FILE: DEPLOYMENT.md
 📝 TITLE: VoiceLens Scripts Deployment Guide
 📊 SIZE: 16,308 bytes
-⏰ PROCESSED: 2025-10-14 16:21:33 UTC
+⏰ PROCESSED: 2025-10-14 16:25:49 UTC
 ================================================================================
 
 # VoiceLens Scripts Deployment Guide
@@ -5101,7 +5101,7 @@ For additional help, consult the individual module documentation:
 📄 FILE: CONTRIBUTING.md
 📝 TITLE: Contributing to VoiceLens Scripts
 📊 SIZE: 3,973 bytes
-⏰ PROCESSED: 2025-10-14 16:21:33 UTC
+⏰ PROCESSED: 2025-10-14 16:25:49 UTC
 ================================================================================
 
 # Contributing to VoiceLens Scripts
@@ -5256,7 +5256,7 @@ Feel free to open a Discussion or reach out to the maintainers. We're here to he
 📄 FILE: VCP_WORKING_GROUPS_STRUCTURE.md
 📝 TITLE: VCP Working Groups Structure & Operations
 📊 SIZE: 16,758 bytes
-⏰ PROCESSED: 2025-10-14 16:21:33 UTC
+⏰ PROCESSED: 2025-10-14 16:25:49 UTC
 ================================================================================
 
 # VCP Working Groups Structure & Operations
@@ -5765,7 +5765,7 @@ This working group structure provides VCP with the organizational foundation nec
 📄 FILE: USAGE.md
 📝 TITLE: VoiceLens Scripts Usage Guide
 📊 SIZE: 7,009 bytes
-⏰ PROCESSED: 2025-10-14 16:21:33 UTC
+⏰ PROCESSED: 2025-10-14 16:25:49 UTC
 ================================================================================
 
 # VoiceLens Scripts Usage Guide
@@ -6017,7 +6017,7 @@ python -m voicelens_seeder.cli generate baseline --help
 📄 FILE: VCP_GOVERNANCE_EXECUTIVE_SUMMARY.md
 📝 TITLE: VCP Governance Executive Summary & Implementation Roadmap
 📊 SIZE: 12,666 bytes
-⏰ PROCESSED: 2025-10-14 16:21:33 UTC
+⏰ PROCESSED: 2025-10-14 16:25:49 UTC
 ================================================================================
 
 # VCP Governance Executive Summary & Implementation Roadmap
@@ -6291,7 +6291,7 @@ The governance framework outlined here leverages proven patterns from successful
 📄 FILE: VCP_V0.5_CHANGELOG.md
 📝 TITLE: Voice Context Protocol (VCP) v0.5 Changelog & Migration Guide
 📊 SIZE: 10,288 bytes
-⏰ PROCESSED: 2025-10-14 16:21:33 UTC
+⏰ PROCESSED: 2025-10-14 16:25:49 UTC
 ================================================================================
 
 # Voice Context Protocol (VCP) v0.5 Changelog & Migration Guide
@@ -6598,7 +6598,7 @@ Starting with v1.0, changes will follow:
 📄 FILE: README_ENVIRONMENT.md
 📝 TITLE: VoiceLens Environment Management
 📊 SIZE: 3,408 bytes
-⏰ PROCESSED: 2025-10-14 16:21:33 UTC
+⏰ PROCESSED: 2025-10-14 16:25:49 UTC
 ================================================================================
 
 # VoiceLens Environment Management
@@ -6742,7 +6742,7 @@ python ensure_venv.py || exit 1
 📄 FILE: HANDOVER_GUIDE.md
 📝 TITLE: VoiceLens Dataset Generation & Delivery Handover Guide
 📊 SIZE: 8,369 bytes
-⏰ PROCESSED: 2025-10-14 16:21:33 UTC
+⏰ PROCESSED: 2025-10-14 16:25:49 UTC
 ================================================================================
 
 # VoiceLens Dataset Generation & Delivery Handover Guide
@@ -6986,7 +6986,7 @@ All operations are fully reproducible with the provided seeds and commands. Stor
 📄 FILE: VCP_IMPLEMENTATION_CONSISTENCY_FRAMEWORK.md
 📝 TITLE: VCP Implementation Consistency Framework
 📊 SIZE: 16,955 bytes
-⏰ PROCESSED: 2025-10-14 16:21:33 UTC
+⏰ PROCESSED: 2025-10-14 16:25:49 UTC
 ================================================================================
 
 # VCP Implementation Consistency Framework
@@ -7481,8 +7481,8 @@ This Implementation Consistency Framework ensures VCP maintains its integrity as
 ================================================================================
 📄 FILE: VCP_GOVERNANCE_CHARTER.md
 📝 TITLE: Voice Context Protocol (VCP) Governance Charter
-📊 SIZE: 14,822 bytes
-⏰ PROCESSED: 2025-10-14 16:21:33 UTC
+📊 SIZE: 14,823 bytes
+⏰ PROCESSED: 2025-10-14 16:25:49 UTC
 ================================================================================
 
 # Voice Context Protocol (VCP) Governance Charter
@@ -7717,7 +7717,7 @@ vcp-compatibility-tests/
 - External security advisor (if needed)
 
 ### 6.2 Vulnerability Management
-1. **Private Disclosure**: security@voicelens.ai
+1. **Private Disclosure**: info@e.integrate.cloud
 2. **Assessment**: 48-hour initial assessment
 3. **Coordination**: Cross-implementation impact analysis
 4. **Patch Development**: Coordinated fix development
@@ -7855,7 +7855,7 @@ This governance charter establishes VCP as a mature, professionally-managed open
 📄 FILE: reports/quality.md
 📝 TITLE: VoiceLens Dataset Quality Assessment Report
 📊 SIZE: 5,549 bytes
-⏰ PROCESSED: 2025-10-14 16:21:33 UTC
+⏰ PROCESSED: 2025-10-14 16:25:49 UTC
 ================================================================================
 
 # VoiceLens Dataset Quality Assessment Report
@@ -8004,8 +8004,8 @@ The VoiceAI4HVAC dataset delivery exceeded all quality targets with perfect exec
 ================================================================================
 
 **Total Files Processed**: 18
-**Total Content Size**: 257,035 bytes (251.0 KB)
-**Generated At**: 2025-10-14 16:21:33 UTC
+**Total Content Size**: 257,026 bytes (251.0 KB)
+**Generated At**: 2025-10-14 16:25:49 UTC
 
 ## Files Included:
 
@@ -8014,7 +8014,7 @@ The VoiceAI4HVAC dataset delivery exceeded all quality targets with perfect exec
 - **docs/VCP_SCHEMA_SPECIFICATION.md** - VCP Schema v0.5 - Complete Specification (24,347 bytes)
 - **docs/PROVIDER_INTEGRATION_GUIDE.md** - Provider Integration & Mapping Implementation Guide (27,147 bytes)
 - **docs/DEPLOYMENT_OPERATIONS_GUIDE.md** - VCP System Deployment & Operations Guide (24,088 bytes)
-- **README.md** - VoiceLens Scripts (13,019 bytes)
+- **README.md** - VoiceLens Scripts (13,009 bytes)
 - **ASSISTABLE_AI_INTEGRATION.md** - Assistable.ai Integration with VCP v0.5 (10,299 bytes)
 - **DEPLOYMENT.md** - VoiceLens Scripts Deployment Guide (16,308 bytes)
 - **CONTRIBUTING.md** - Contributing to VoiceLens Scripts (3,973 bytes)
@@ -8025,7 +8025,7 @@ The VoiceAI4HVAC dataset delivery exceeded all quality targets with perfect exec
 - **README_ENVIRONMENT.md** - VoiceLens Environment Management (3,408 bytes)
 - **HANDOVER_GUIDE.md** - VoiceLens Dataset Generation & Delivery Handover Guide (8,369 bytes)
 - **VCP_IMPLEMENTATION_CONSISTENCY_FRAMEWORK.md** - VCP Implementation Consistency Framework (16,955 bytes)
-- **VCP_GOVERNANCE_CHARTER.md** - Voice Context Protocol (VCP) Governance Charter (14,822 bytes)
+- **VCP_GOVERNANCE_CHARTER.md** - Voice Context Protocol (VCP) Governance Charter (14,823 bytes)
 - **reports/quality.md** - VoiceLens Dataset Quality Assessment Report (5,549 bytes)
 
 ---
@@ -8036,4 +8036,4 @@ and operational procedures.*
 
 **Repository**: https://github.com/prompted365/voicelens-scripts
 **Documentation Directory**: docs/
-**Last Updated**: 2025-10-14 16:21:33 UTC
+**Last Updated**: 2025-10-14 16:25:49 UTC

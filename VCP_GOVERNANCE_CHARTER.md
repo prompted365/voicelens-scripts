@@ -233,7 +233,7 @@ vcp-compatibility-tests/
 - External security advisor (if needed)
 
 ### 6.2 Vulnerability Management
-1. **Private Disclosure**: security@voicelens.ai
+1. **Private Disclosure**: info@e.integrate.cloud
 2. **Assessment**: 48-hour initial assessment
 3. **Coordination**: Cross-implementation impact analysis
 4. **Patch Development**: Coordinated fix development
