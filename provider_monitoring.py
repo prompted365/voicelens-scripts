@@ -646,6 +646,85 @@ class VoiceLensMonitoringSystem:
         logger.info(f"Webhook changes detected for {len(webhook_changes)} providers")
         # This would trigger a review process for VCP mapping updates
         # Could integrate with provider_documentation.py to update mappings
+    
+    def get_recent_changes(self, limit: int = 10) -> List[ChangeEvent]:
+        """Get recent change events from monitoring database"""
+        try:
+            # Try to get changes from the new monitoring system first
+            from monitor_provider_changes import ProviderMonitor
+            monitor = ProviderMonitor()
+            
+            # Get recent changes from the monitoring database
+            raw_changes = monitor.get_recent_changes(limit=limit)
+            
+            # Convert to ChangeEvent objects
+            change_events = []
+            for change in raw_changes:
+                # Map severity levels
+                severity_mapping = {
+                    'low': SeverityLevel.LOW,
+                    'medium': SeverityLevel.MEDIUM, 
+                    'high': SeverityLevel.HIGH,
+                    'critical': SeverityLevel.CRITICAL
+                }
+                
+                # Map change types
+                change_type_mapping = {
+                    'content_changed': ChangeType.DOCUMENTATION_UPDATED,
+                    'new_post': ChangeType.CHANGELOG_ENTRY,
+                    'status_change': ChangeType.API_CHANGE,
+                    'error': ChangeType.OTHER
+                }
+                
+                change_event = ChangeEvent(
+                    provider=change.provider,
+                    change_type=change_type_mapping.get(change.change_type, ChangeType.OTHER),
+                    title=change.summary,
+                    description=change.content_diff or '',
+                    severity=severity_mapping.get(change.severity, SeverityLevel.MEDIUM),
+                    detected_at=change.detected_at,
+                    source_url=change.resource_url
+                )
+                change_events.append(change_event)
+            
+            return change_events
+            
+        except Exception as e:
+            # Fallback: try to get from the old database structure
+            import sqlite3
+            try:
+                conn = sqlite3.connect("monitoring.db")
+                cursor = conn.cursor()
+                
+                cursor.execute("""
+                    SELECT provider, change_type, severity, title, description, url, detected_at
+                    FROM change_events 
+                    ORDER BY detected_at DESC LIMIT ?
+                """, (limit,))
+                
+                changes = []
+                for row in cursor.fetchall():
+                    # Map string values back to enums
+                    change_type = getattr(ChangeType, row[1].upper(), ChangeType.OTHER)
+                    severity = getattr(SeverityLevel, row[2].upper(), SeverityLevel.MEDIUM)
+                    
+                    change = ChangeEvent(
+                        provider=row[0],
+                        change_type=change_type,
+                        title=row[3],
+                        description=row[4],
+                        severity=severity,
+                        detected_at=datetime.fromisoformat(row[6]) if row[6] else datetime.now(timezone.utc),
+                        source_url=row[5]
+                    )
+                    changes.append(change)
+                
+                conn.close()
+                return changes
+                
+            except Exception as db_e:
+                print(f"Warning: Could not access monitoring database: {e}, {db_e}")
+                return []
 
 # Notification handlers
 async def slack_notification_handler(changes: List[ChangeEvent]):

@@ -229,6 +229,147 @@ def test_webhook_transformation():
         
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/analytics/transformation-stats')
+def get_transformation_stats():
+    """Get VCP transformation analytics"""
+    try:
+        # Query transformation records
+        total_transformations = VCPTransformation.query.count()
+        
+        # Get provider breakdown with average transformation times
+        provider_stats = {}
+        for provider_name in ['retell', 'bland', 'vapi', 'elevenlabs', 'openai_realtime', 'assistable']:
+            provider_transforms = VCPTransformation.query.filter_by(provider=provider_name).all()
+            if provider_transforms:
+                avg_time = sum(t.transformation_time_ms or 0 for t in provider_transforms) / len(provider_transforms)
+                provider_stats[provider_name] = {
+                    'count': len(provider_transforms),
+                    'avg_time_ms': round(avg_time, 2)
+                }
+            else:
+                provider_stats[provider_name] = {
+                    'count': 0,
+                    'avg_time_ms': 0
+                }
+        
+        return jsonify({
+            'total_transformations': total_transformations,
+            'provider_breakdown': provider_stats,
+            'last_updated': datetime.utcnow().isoformat()
+        })
+    except Exception as e:
+        logger.error(f"Error getting transformation stats: {e}")
+        return jsonify({
+            'total_transformations': 0,
+            'provider_breakdown': {},
+            'error': str(e)
+        })
+
+@app.route('/api/analytics/test-results')
+def get_test_results():
+    """Get webhook test analytics"""
+    try:
+        # Query test records
+        total_tests = WebhookTest.query.count()
+        
+        # Get test summary by provider
+        test_summary = []
+        for provider_name in ['retell', 'bland', 'vapi', 'elevenlabs', 'openai_realtime', 'assistable']:
+            provider_tests = WebhookTest.query.filter_by(provider=provider_name).all()
+            
+            if provider_tests:
+                successful_tests = [t for t in provider_tests if t.success]
+                success_rate = (len(successful_tests) / len(provider_tests)) * 100
+            else:
+                success_rate = 0
+            
+            test_summary.append({
+                'provider': provider_name,
+                'total_tests': len(provider_tests) if provider_tests else 0,
+                'success_rate': round(success_rate, 1)
+            })
+        
+        return jsonify({
+            'total_tests': total_tests,
+            'test_summary': test_summary,
+            'last_updated': datetime.utcnow().isoformat()
+        })
+    except Exception as e:
+        logger.error(f"Error getting test results: {e}")
+        return jsonify({
+            'total_tests': 0,
+            'test_summary': [],
+            'error': str(e)
+        })
+
+@app.route('/api/monitoring/changes')
+def get_monitoring_changes():
+    """Get recent monitoring changes"""
+    try:
+        # Get recent changes from monitoring system
+        changes = monitoring_system.get_recent_changes(limit=10)
+        
+        # Convert to serializable format
+        change_data = []
+        for change in changes:
+            change_data.append({
+                'title': change.title,
+                'provider': change.provider,
+                'change_type': change.change_type.value,
+                'severity': change.severity.value,
+                'detected_at': change.detected_at.isoformat(),
+                'description': change.description
+            })
+        
+        return jsonify(change_data)
+    except Exception as e:
+        logger.error(f"Error getting monitoring changes: {e}")
+        return jsonify([])
+
+@app.route('/api/monitoring/health')
+def get_monitoring_health():
+    """Get service health status"""
+    try:
+        health_data = []
+        
+        # Check each provider's status
+        for provider in registry.get_all_providers():
+            try:
+                # Simple health check - try to access the provider's status page or API
+                import requests
+                response_time_start = datetime.now()
+                
+                if provider.status_page:
+                    resp = requests.get(provider.status_page, timeout=5)
+                    is_healthy = resp.status_code == 200
+                    endpoint = provider.status_page
+                elif provider.api_base_url:
+                    resp = requests.get(provider.api_base_url, timeout=5)
+                    is_healthy = resp.status_code in [200, 401, 403]  # API might require auth
+                    endpoint = provider.api_base_url
+                else:
+                    is_healthy = True  # No endpoint to check
+                    endpoint = "N/A"
+                
+                response_time = (datetime.now() - response_time_start).total_seconds() * 1000
+                
+            except:
+                is_healthy = False
+                response_time = 0
+                endpoint = provider.status_page or provider.api_base_url or "N/A"
+            
+            health_data.append({
+                'provider': provider.name,
+                'is_healthy': is_healthy,
+                'endpoint': endpoint,
+                'response_time_ms': round(response_time, 2)
+            })
+        
+        return jsonify(health_data)
+    except Exception as e:
+        logger.error(f"Error getting health status: {e}")
+        return jsonify([])
+
 @app.route('/api/webhook-signature-test', methods=['POST'])
 def test_webhook_signature():
     """Test webhook signature validation"""
@@ -372,88 +513,6 @@ def get_service_health():
         logger.error(f"Error getting service health: {e}")
         return jsonify([])
 
-@app.route('/api/analytics/transformation-stats')
-def get_transformation_stats():
-    """Get VCP transformation analytics"""
-    try:
-        # Get transformation stats from last 30 days
-        cutoff = datetime.utcnow() - timedelta(days=30)
-        
-        transformations = VCPTransformation.query.filter(
-            VCPTransformation.created_at >= cutoff
-        ).all()
-        
-        # Group by provider
-        provider_stats = {}
-        total_transformations = len(transformations)
-        total_time = sum(t.transformation_time_ms for t in transformations)
-        
-        for transform in transformations:
-            if transform.provider not in provider_stats:
-                provider_stats[transform.provider] = {
-                    'count': 0,
-                    'total_time_ms': 0,
-                    'avg_time_ms': 0
-                }
-            
-            provider_stats[transform.provider]['count'] += 1
-            provider_stats[transform.provider]['total_time_ms'] += transform.transformation_time_ms
-        
-        # Calculate averages
-        for provider, stats in provider_stats.items():
-            stats['avg_time_ms'] = stats['total_time_ms'] / stats['count']
-        
-        return jsonify({
-            'total_transformations': total_transformations,
-            'average_time_ms': total_time / total_transformations if total_transformations > 0 else 0,
-            'provider_breakdown': provider_stats,
-            'period_days': 30
-        })
-        
-    except Exception as e:
-        logger.error(f"Error getting transformation stats: {e}")
-        return jsonify({'error': str(e)}), 500
-
-@app.route('/api/analytics/test-results')
-def get_test_results():
-    """Get webhook test results analytics"""
-    try:
-        cutoff = datetime.utcnow() - timedelta(days=30)
-        
-        tests = WebhookTest.query.filter(
-            WebhookTest.created_at >= cutoff
-        ).all()
-        
-        # Group by provider and test type
-        results = {}
-        for test in tests:
-            key = f"{test.provider}_{test.test_type}"
-            if key not in results:
-                results[key] = {
-                    'provider': test.provider,
-                    'test_type': test.test_type,
-                    'total': 0,
-                    'successful': 0,
-                    'success_rate': 0.0
-                }
-            
-            results[key]['total'] += 1
-            if test.success:
-                results[key]['successful'] += 1
-        
-        # Calculate success rates
-        for key, data in results.items():
-            data['success_rate'] = (data['successful'] / data['total']) * 100
-        
-        return jsonify({
-            'test_summary': list(results.values()),
-            'total_tests': len(tests),
-            'period_days': 30
-        })
-        
-    except Exception as e:
-        logger.error(f"Error getting test results: {e}")
-        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/comparison-matrix')
 def get_comparison_matrix():

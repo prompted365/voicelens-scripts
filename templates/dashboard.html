@@ -283,8 +283,21 @@
 
         function populateProviderSelect() {
             const select = document.getElementById('test-provider');
+            // Map display names to backend provider keys
+            const providerKeyMap = {
+                'Retell AI': 'retell',
+                'Bland AI': 'bland', 
+                'Vapi': 'vapi',
+                'ElevenLabs': 'elevenlabs',
+                'OpenAI Realtime API': 'openai_realtime',
+                'Assistable AI': 'assistable'
+            };
+            
             select.innerHTML = '<option value="">Select a provider</option>' + 
-                providers.map(p => `<option value="${p.name.toLowerCase().replace(/\\s+/g, '_')}">${p.name}</option>`).join('');
+                providers.map(p => {
+                    const providerKey = providerKeyMap[p.name] || p.name.toLowerCase().replace(/\\s+/g, '_');
+                    return `<option value="${providerKey}">${p.name}</option>`;
+                }).join('');
         }
 
         // Load dashboard data
