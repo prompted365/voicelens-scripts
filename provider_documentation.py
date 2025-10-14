@@ -134,7 +134,7 @@ class VoiceAIProviderRegistry:
                     "call.call_id": "call.call_id",
                     "call.from_number": "call.from_",
                     "call.to_number": "call.to",
-                    "call.direction": "call.channel",
+                    "call.direction": "call.direction",  # Use new direction field
                     "call.start_timestamp": "call.start_time",
                     "call.end_timestamp": "call.end_time",
                     "call.transcript": "artifacts.transcript",
@@ -240,7 +240,7 @@ class VoiceAIProviderRegistry:
                 ],
                 vcp_mapping_rules={
                     "message.call.id": "call.call_id",
-                    "message.endedReason": "outcomes.objective.disconnect_reason",
+                    "message.endedReason": "outcomes.objective.status",  # Map to VCP status (required field)
                     "message.artifact.transcript": "artifacts.transcript",
                     "message.artifact.recording": "artifacts.recording_url"
                 },
@@ -438,7 +438,7 @@ class VoiceAIProviderRegistry:
                 ],
                 vcp_mapping_rules={
                     "call_id": "call.call_id",
-                    "direction": "call.channel", 
+                    "direction": "call.direction",  # Use new direction field instead of channel
                     "to": "call.to",
                     "from": "call.from_",
                     "start_timestamp": "call.start_time",
@@ -528,22 +528,32 @@ class VCPMapper:
         for provider_path, vcp_path in provider.vcp_mapping_rules.items():
             value = self._get_nested_value(webhook_payload, provider_path)
             if value is not None:
-                # Special handling for Assistable.ai mappings
+                # Special handling for provider-specific mappings
                 if provider_name == "assistable":
                     if provider_path == "user_sentiment":
                         # Convert sentiment string to score
                         sentiment_score = self._convert_sentiment_to_score(value)
                         self._set_nested_value(vcp_data, vcp_path, sentiment_score)
                     elif provider_path == "direction":
-                        # Convert direction to channel type
-                        channel = self._convert_direction_to_channel(value)
-                        self._set_nested_value(vcp_data, vcp_path, channel)
+                        # Direction now maps to call.direction field directly
+                        self._set_nested_value(vcp_data, vcp_path, value)
+                        # Also set channel to phone for Assistable calls
+                        self._set_nested_value(vcp_data, "call.channel", "phone")
                     elif provider_path == "disconnection_reason":
                         # Convert disconnection reason to outcome status
                         status = self._convert_disconnection_to_status(value)
                         self._set_nested_value(vcp_data, vcp_path, status)
                     else:
                         self._set_nested_value(vcp_data, vcp_path, value)
+                elif provider_path.endswith(".direction") and vcp_path == "call.direction":
+                    # Handle direction field for any provider (Retell, etc.)
+                    self._set_nested_value(vcp_data, vcp_path, value)
+                    # Set default channel to phone for voice calls with direction
+                    self._set_nested_value(vcp_data, "call.channel", "phone")
+                elif provider_name == "vapi" and provider_path == "message.endedReason":
+                    # Convert Vapi endedReason to VCP status
+                    status = self._convert_vapi_ended_reason_to_status(value)
+                    self._set_nested_value(vcp_data, vcp_path, status)
                 else:
                     self._set_nested_value(vcp_data, vcp_path, value)
         
@@ -690,6 +700,23 @@ class VCPMapper:
             return "partial"
         else:
             return "failure"
+    
+    def _convert_vapi_ended_reason_to_status(self, ended_reason: str) -> str:
+        """Convert Vapi endedReason to VCP outcome status"""
+        reason = ended_reason.lower()
+        
+        if reason in ["completed", "success", "assistant_ended"]:
+            return "success"
+        elif reason in ["hangup", "user_hangup", "customer_hangup"]:
+            return "success"  # Normal hangup is successful completion
+        elif reason in ["timeout", "no_answer", "voicemail", "busy"]:
+            return "timeout"
+        elif reason in ["error", "failed", "connection_error", "technical_error"]:
+            return "error"
+        elif reason in ["transferred", "forwarded"]:
+            return "partial"
+        else:
+            return "unknown"
     
     def _build_provider_specific_data(self, provider_name: str, webhook_payload: Dict[str, Any]) -> Dict[str, Any]:
         """Build provider-specific custom data"""

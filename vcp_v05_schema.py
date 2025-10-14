@@ -60,6 +60,14 @@ class ChannelType(str, Enum):
     EMBED = "embed"
     API = "api"
     WEBSOCKET = "websocket"
+    # Directional channels (for backward compatibility with v0.4)
+    INBOUND = "inbound"
+    OUTBOUND = "outbound"
+
+class CallDirection(str, Enum):
+    """Call direction types (preferred approach for v0.5+)"""
+    INBOUND = "inbound"
+    OUTBOUND = "outbound"
 
 class OutcomeStatus(str, Enum):
     """Call outcome status"""
@@ -68,6 +76,7 @@ class OutcomeStatus(str, Enum):
     PARTIAL = "partial"
     TIMEOUT = "timeout"
     ERROR = "error"
+    UNKNOWN = "unknown"
 
 class GapClass(str, Enum):
     """Perception gap classification"""
@@ -101,6 +110,9 @@ class Call(BaseModel):
     parent_session_id: Optional[str] = Field(None, description="Parent session for hierarchical grouping")
     correlation_id: Optional[str] = Field(None, description="Cross-system correlation identifier")
     channel: Optional[ChannelType] = Field(None, description="Communication channel type")
+    direction: Optional[CallDirection] = Field(None, description="Call direction (inbound/outbound)")
+    from_: Optional[str] = Field(None, alias="from", description="Originating phone number or identifier")
+    to: Optional[str] = Field(None, description="Destination phone number or identifier")
     caller_id: Optional[str] = Field(None, description="Caller identification (anonymized)")
     geographic_region: Optional[str] = Field(None, description="Geographic region of the call")
     

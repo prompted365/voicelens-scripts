@@ -312,9 +312,9 @@
                 document.getElementById('active-monitors').textContent = providers.filter(p => p.status_page).length;
                 document.getElementById('total-transformations').textContent = transformStats.total_transformations || 0;
                 
-                const overallSuccessRate = testResults.test_summary ? 
+                const overallSuccessRate = testResults.test_summary && testResults.test_summary.length > 0 ? 
                     testResults.test_summary.reduce((acc, test) => acc + test.success_rate, 0) / testResults.test_summary.length : 0;
-                document.getElementById('success-rate').textContent = `${overallSuccessRate.toFixed(1)}%`;
+                document.getElementById('success-rate').textContent = `${isNaN(overallSuccessRate) ? '0.0' : overallSuccessRate.toFixed(1)}%`;
                 
             } catch (error) {
                 console.error('Error loading dashboard data:', error);
@@ -391,62 +391,85 @@
         }
 
         function renderPerformanceChart(stats) {
-            const ctx = document.getElementById('performance-chart').getContext('2d');
-            const providerNames = Object.keys(stats.provider_breakdown || {});
-            const avgTimes = providerNames.map(name => stats.provider_breakdown[name].avg_time_ms);
+            try {
+                const ctx = document.getElementById('performance-chart').getContext('2d');
+                const providerNames = Object.keys(stats.provider_breakdown || {});
+                const avgTimes = providerNames.map(name => stats.provider_breakdown[name]?.avg_time_ms || 0);
 
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: providerNames,
-                    datasets: [{
-                        label: 'Avg Transformation Time (ms)',
-                        data: avgTimes,
-                        backgroundColor: 'rgba(59, 130, 246, 0.6)',
-                        borderColor: 'rgba(59, 130, 246, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: { beginAtZero: true }
-                    }
+                // Clear any existing chart
+                if (window.performanceChart) {
+                    window.performanceChart.destroy();
                 }
-            });
+
+                window.performanceChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: providerNames.length > 0 ? providerNames : ['No Data'],
+                        datasets: [{
+                            label: 'Avg Transformation Time (ms)',
+                            data: avgTimes.length > 0 ? avgTimes : [0],
+                            backgroundColor: 'rgba(59, 130, 246, 0.6)',
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: { beginAtZero: true }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error rendering performance chart:', error);
+                document.getElementById('performance-chart').parentNode.innerHTML = '<p class="text-red-500">Chart loading error</p>';
+            }
         }
 
         function renderSuccessChart(testResults) {
-            const ctx = document.getElementById('success-chart').getContext('2d');
-            const testData = testResults.test_summary || [];
-            const providers = [...new Set(testData.map(t => t.provider))];
-            const successRates = providers.map(provider => {
-                const providerTests = testData.filter(t => t.provider === provider);
-                return providerTests.reduce((acc, test) => acc + test.success_rate, 0) / providerTests.length;
-            });
+            try {
+                const ctx = document.getElementById('success-chart').getContext('2d');
+                const testData = testResults.test_summary || [];
+                const providers = [...new Set(testData.map(t => t.provider))];
+                const successRates = providers.map(provider => {
+                    const providerTests = testData.filter(t => t.provider === provider);
+                    const rate = providerTests.length > 0 ? 
+                        providerTests.reduce((acc, test) => acc + (test.success_rate || 0), 0) / providerTests.length : 0;
+                    return isNaN(rate) ? 0 : rate;
+                });
 
-            new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: providers,
-                    datasets: [{
-                        data: successRates,
-                        backgroundColor: [
-                            'rgba(34, 197, 94, 0.6)',
-                            'rgba(59, 130, 246, 0.6)',
-                            'rgba(168, 85, 247, 0.6)',
-                            'rgba(251, 191, 36, 0.6)',
-                            'rgba(239, 68, 68, 0.6)'
-                        ]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: { position: 'bottom' }
-                    }
+                // Clear any existing chart
+                if (window.successChart) {
+                    window.successChart.destroy();
                 }
-            });
+
+                window.successChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: providers.length > 0 ? providers : ['No Data'],
+                        datasets: [{
+                            data: successRates.length > 0 ? successRates : [1],
+                            backgroundColor: [
+                                'rgba(34, 197, 94, 0.6)',
+                                'rgba(59, 130, 246, 0.6)',
+                                'rgba(168, 85, 247, 0.6)',
+                                'rgba(251, 191, 36, 0.6)',
+                                'rgba(239, 68, 68, 0.6)',
+                                'rgba(156, 163, 175, 0.6)' // Gray for 'No Data'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { position: 'bottom' }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error rendering success chart:', error);
+                document.getElementById('success-chart').parentNode.innerHTML = '<p class="text-red-500">Chart loading error</p>';
+            }
         }
 
         // Webhook testing
@@ -513,6 +536,66 @@
                                 "decision_maker": true,
                                 "purchase_timeline": "within_30_days"
                             }
+                        },
+                        'retell': {
+                            "event": "call_ended",
+                            "call": {
+                                "call_id": "retell_demo_456",
+                                "from_number": "+12137771234",
+                                "to_number": "+12137771235",
+                                "direction": "inbound",
+                                "start_timestamp": 1714608475945,
+                                "end_timestamp": 1714608491736,
+                                "disconnection_reason": "user_hangup",
+                                "transcript": "Agent: Hello, how can I help you today?\\nUser: I need help with my account."
+                            }
+                        },
+                        'vapi': {
+                            "message": {
+                                "type": "end-of-call-report",
+                                "endedReason": "hangup",
+                                "call": {"id": "vapi_demo_789", "phoneNumber": "+1234567890"},
+                                "artifact": {
+                                    "transcript": "AI: How can I help? User: What's the weather?",
+                                    "messages": [
+                                        {"role": "assistant", "message": "How can I help?"},
+                                        {"role": "user", "message": "What's the weather?"}
+                                    ]
+                                }
+                            }
+                        },
+                        'bland': {
+                            "call_id": "bland_demo_101",
+                            "from": "+12345678901",
+                            "to": "+10987654321",
+                            "call_length": 120,
+                            "answered": true,
+                            "completed": true,
+                            "transcript": "AI: Hello! How can I help? User: Hi there!"
+                        },
+                        'elevenlabs': {
+                            "type": "post_call_transcription",
+                            "event_timestamp": 1739537297,
+                            "data": {
+                                "agent_id": "elevenlabs_agent",
+                                "conversation_id": "elevenlabs_conv_202",
+                                "transcript": [
+                                    {
+                                        "role": "agent",
+                                        "message": "Hello! How can I help?",
+                                        "time_in_call_secs": 0
+                                    }
+                                ]
+                            }
+                        },
+                        'openai_realtime': {
+                            "event_id": "openai_event_303",
+                            "type": "session.updated",
+                            "session": {
+                                "id": "openai_sess_001",
+                                "model": "gpt-realtime",
+                                "instructions": "You are a helpful assistant."
+                            }
                         }
                     };
                     
@@ -557,11 +640,131 @@
             return badges[severity] || 'bg-gray-100 text-gray-800';
         }
 
-        function viewProvider(providerName) {
-            // This would open a detailed provider view
-            alert(`Provider details for ${providerName} - Feature coming soon!`);
+        async function viewProvider(providerName) {
+            try {
+                // Map display name to provider key
+                const providerKeyMap = {
+                    'Retell AI': 'retell',
+                    'Bland AI': 'bland', 
+                    'Vapi': 'vapi',
+                    'ElevenLabs': 'elevenlabs',
+                    'OpenAI Realtime API': 'openai_realtime',
+                    'Assistable AI': 'assistable'
+                };
+                
+                const providerKey = providerKeyMap[providerName] || providerName.toLowerCase().replace(/\\s+/g, '_');
+                const response = await fetch(`/api/providers/${providerKey}`);
+                
+                if (!response.ok) {
+                    alert(`Error loading provider details: ${response.status}`);
+                    return;
+                }
+                
+                const providerData = await response.json();
+                
+                // Create modal dialog with provider details
+                const modalHtml = `
+                    <div id="provider-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+                        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+                            <div class="mt-3">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h3 class="text-lg font-bold text-gray-900">${providerData.name} Details</h3>
+                                    <button onclick="closeProviderModal()" class="text-gray-400 hover:text-gray-600">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                    <div><strong>Company:</strong> ${providerData.company}</div>
+                                    <div><strong>Website:</strong> <a href="${providerData.website}" target="_blank" class="text-blue-600 hover:underline">${providerData.website}</a></div>
+                                    <div><strong>Documentation:</strong> <a href="${providerData.docs_url}" target="_blank" class="text-blue-600 hover:underline">View Docs</a></div>
+                                    <div><strong>API Base:</strong> ${providerData.api_base_url}</div>
+                                    ${providerData.status_page ? `<div><strong>Status Page:</strong> <a href="${providerData.status_page}" target="_blank" class="text-blue-600 hover:underline">View Status</a></div>` : ''}
+                                    ${providerData.rss_feed ? `<div><strong>RSS Feed:</strong> <a href="${providerData.rss_feed}" target="_blank" class="text-blue-600 hover:underline">View Feed</a></div>` : ''}
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <strong>Supported Events (${providerData.supported_events.length}):</strong>
+                                    <div class="flex flex-wrap gap-1 mt-2">
+                                        ${providerData.supported_events.map(event => `<span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">${event}</span>`).join('')}
+                                    </div>
+                                </div>
+                                
+                                ${providerData.webhook_auth ? `
+                                    <div class="mb-4">
+                                        <strong>Webhook Authentication:</strong>
+                                        <div class="bg-gray-50 p-3 rounded mt-2">
+                                            <div>Method: <code class="bg-gray-200 px-1 rounded">${providerData.webhook_auth.method || 'None'}</code></div>
+                                            ${providerData.webhook_auth.header_name ? `<div>Header: <code class="bg-gray-200 px-1 rounded">${providerData.webhook_auth.header_name}</code></div>` : ''}
+                                            <div>Secret Required: ${providerData.webhook_auth.requires_secret ? 'Yes' : 'No'}</div>
+                                            ${providerData.webhook_auth.ip_addresses && providerData.webhook_auth.ip_addresses.length > 0 ? `<div>IP Addresses: ${providerData.webhook_auth.ip_addresses.join(', ')}</div>` : ''}
+                                        </div>
+                                    </div>
+                                ` : ''}
+                                
+                                <div class="mb-4">
+                                    <strong>VCP Mapping Fields:</strong> ${Object.keys(providerData.vcp_mapping_rules || {}).length} fields mapped
+                                </div>
+                                
+                                ${providerData.webhook_schemas && providerData.webhook_schemas.length > 0 ? `
+                                    <div class="mb-4">
+                                        <strong>Webhook Schemas (${providerData.webhook_schemas.length}):</strong>
+                                        <div class="mt-2 space-y-2">
+                                            ${providerData.webhook_schemas.map(schema => `
+                                                <div class="bg-gray-50 p-3 rounded">
+                                                    <div><strong>Event:</strong> ${schema.event_type}</div>
+                                                    <div><strong>Required Fields:</strong> ${schema.required_fields.length}</div>
+                                                    <div><strong>Optional Fields:</strong> ${schema.optional_fields?.length || 0}</div>
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                ` : ''}
+                                
+                                <div class="flex justify-end space-x-2">
+                                    <button onclick="testProviderWebhook('${providerKey}')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">
+                                        Test Webhook
+                                    </button>
+                                    <button onclick="closeProviderModal()" class="bg-gray-500 hover:bg-gray-700 text-white px-4 py-2 rounded text-sm">
+                                        Close
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Add modal to page
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
+                
+            } catch (error) {
+                console.error('Error loading provider details:', error);
+                alert(`Error loading provider details: ${error.message}`);
+            }
+        }
+        
+        function closeProviderModal() {
+            const modal = document.getElementById('provider-modal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+        
+        function testProviderWebhook(providerKey) {
+            // Switch to webhook testing tab and pre-select provider
+            switchTab('testing');
+            document.getElementById('test-provider').value = providerKey;
+            closeProviderModal();
         }
 
+        function updateStats() {
+            // Update the stats overview with current provider data
+            document.getElementById('total-providers').textContent = providers.length;
+            document.getElementById('active-monitors').textContent = providers.filter(p => p.status_page).length;
+        }
+        
         function refreshAllData() {
             location.reload();
         }
