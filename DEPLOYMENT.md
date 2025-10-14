@@ -6,7 +6,8 @@ This guide covers deploying the VoiceLens voice AI provider monitoring and VCP o
 
 The VoiceLens Scripts system provides:
 - **Voice Context Protocol (VCP) v0.5**: Unified schema for voice AI interactions
-- **Provider Documentation**: Webhook mappings for major voice AI providers
+- **Provider Documentation**: Webhook mappings for major voice AI providers with comprehensive event support
+- **Webhook Processing**: Production-ready Flask webhook handler with signature validation
 - **Provider Monitoring**: Change detection and health monitoring system
 - **Operations Dashboard**: Web-based management interface
 - **VCP Validation**: Schema validation and transformation utilities
@@ -109,6 +110,19 @@ BLAND_API_KEY=your-bland-api-key
 VAPI_API_KEY=your-vapi-api-key
 ELEVENLABS_API_KEY=your-elevenlabs-api-key
 OPENAI_API_KEY=your-openai-api-key
+
+# Webhook Processing Configuration
+WEBHOOK_BASE_URL=https://yourdomain.com/webhook
+WEBHOOK_SECRET_KEY=your-webhook-secret-key
+RETELL_WEBHOOK_SECRET=your-retell-webhook-secret
+ELEVENLABS_WEBHOOK_SECRET=your-elevenlabs-webhook-secret
+
+# Webhook Event Processing
+PROCESS_CALL_STARTED=true
+PROCESS_CALL_ENDED=true
+PROCESS_CALL_ANALYZED=true
+STORE_WEBHOOK_PAYLOADS=true
+WEBHOOK_RATE_LIMIT=100  # requests per minute
 
 # Security (production)
 ALLOWED_HOSTS=localhost,127.0.0.1,yourdomain.com
@@ -557,6 +571,27 @@ server {
     location /api/health {
         proxy_pass http://127.0.0.1:5000;
         access_log off;
+    }
+    
+    # Webhook endpoints (special handling)
+    location /webhook/ {
+        proxy_pass http://127.0.0.1:5000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        
+        # Webhook-specific settings
+        proxy_buffering off;
+        proxy_request_buffering off;
+        client_max_body_size 10M;
+        
+        # Preserve original headers for signature validation
+        proxy_pass_request_headers on;
+        proxy_set_header X-Original-URI $request_uri;
+        
+        # Rate limiting for webhook endpoints
+        limit_req zone=webhook_limit burst=50 nodelay;
     }
 }
 ```

@@ -49,7 +49,7 @@ class VoiceAIProviderRegistry:
 
 ### 1. Retell AI Integration
 
-**Overview**: Retell AI provides conversational voice AI with robust webhook support and signature validation.
+**Overview**: Retell AI provides conversational voice AI with comprehensive webhook support for 3 event types: `call_started`, `call_ended`, and `call_analyzed` with robust signature validation.
 
 #### Configuration
 
@@ -66,6 +66,22 @@ class ProviderInfo:
     changelog_url: str = "https://www.retellai.com/changelog"
 ```
 
+#### Supported Events
+
+Retell AI provides three distinct webhook event types, each with specific schemas and mapping rules:
+
+1. **`call_started`**: Triggered when a call initiates
+   - Contains call setup information and initial metadata
+   - Maps to VCP session initialization
+
+2. **`call_ended`**: Triggered when a call completes
+   - Contains complete transcript, duration, and call metadata
+   - Maps to VCP call completion with artifacts
+
+3. **`call_analyzed`**: Triggered when post-call analysis is complete
+   - Contains sentiment analysis, success metrics, and custom analysis data
+   - Maps to VCP outcomes and analysis data
+
 #### Authentication
 
 ```python
@@ -78,41 +94,110 @@ webhook_auth = WebhookAuthConfig(
 )
 ```
 
-#### Webhook Schema
+#### Webhook Schemas
 
+Retell AI provides three distinct webhook schemas:
+
+**1. Call Started Schema**
 ```python
-webhook_schemas = [
-    WebhookSchema(
-        event_type=WebhookEventType.CALL_ENDED,
-        required_fields=[
-            "event", "call.call_id", "call.from_number", 
-            "call.to_number", "call.direction", "call.start_timestamp",
-            "call.end_timestamp", "call.disconnection_reason"
-        ],
-        optional_fields=[
-            "call.transcript", "call.transcript_object", 
-            "call.metadata", "call.call_analysis"
-        ],
-        nested_objects={
-            "call": ["call_id", "agent_id", "call_status", "transcript", "metadata"],
-            "transcript_object": ["role", "content", "timestamp"]
-        }
-    )
-]
+WebhookSchema(
+    event_type=WebhookEventType.CALL_STARTED,
+    required_fields=[
+        "event", "call.call_id", "call.from_number", 
+        "call.to_number", "call.direction", "call.start_timestamp",
+        "call.agent_id", "call.call_status"
+    ],
+    optional_fields=[
+        "call.metadata", "call.retell_llm_dynamic_variables"
+    ],
+    nested_objects={
+        "call": ["call_id", "agent_id", "call_status", "metadata", "retell_llm_dynamic_variables"],
+        "retell_llm_dynamic_variables": ["customer_name", "custom_fields"]
+    }
+)
+```
+
+**2. Call Ended Schema**
+```python
+WebhookSchema(
+    event_type=WebhookEventType.CALL_ENDED,
+    required_fields=[
+        "event", "call.call_id", "call.from_number", 
+        "call.to_number", "call.direction", "call.start_timestamp",
+        "call.end_timestamp", "call.disconnection_reason"
+    ],
+    optional_fields=[
+        "call.transcript", "call.transcript_object", 
+        "call.transcript_with_tool_calls", "call.metadata", 
+        "call.retell_llm_dynamic_variables", "call.opt_out_sensitive_data_storage",
+        "call.recording_url"
+    ],
+    nested_objects={
+        "call": ["call_id", "agent_id", "call_status", "transcript", "transcript_object", 
+                "transcript_with_tool_calls", "metadata", "retell_llm_dynamic_variables"],
+        "transcript_object": ["role", "content", "timestamp"],
+        "transcript_with_tool_calls": ["role", "content", "timestamp", "tool_calls"]
+    }
+)
+```
+
+**3. Call Analyzed Schema** 
+```python
+WebhookSchema(
+    event_type=WebhookEventType.CALL_ANALYZED,
+    required_fields=[
+        "event", "call.call_id", "call.call_analysis"
+    ],
+    optional_fields=[
+        "call.agent_id", "call.from_number", "call.to_number", 
+        "call.direction", "call.start_timestamp", "call.end_timestamp",
+        "call.disconnection_reason", "call.transcript", "call.metadata"
+    ],
+    nested_objects={
+        "call": ["call_id", "agent_id", "call_status", "call_analysis", "metadata"],
+        "call_analysis": ["summary", "sentiment", "custom_analysis_data", 
+                         "user_sentiment", "call_successful", "call_summary",
+                         "in_voicemail", "user_talked", "agent_talked"]
+    }
+)
 ```
 
 #### VCP Mapping Rules
 
+Comprehensive mapping rules supporting all three Retell webhook event types:
+
 ```python
 vcp_mapping_rules = {
+    # Common fields across all events
     "call.call_id": "call.call_id",
+    "call.agent_id": "call.agent_id",
     "call.from_number": "call.from_",
     "call.to_number": "call.to",
-    "call.direction": "call.direction",  # Uses new direction field
+    "call.direction": "call.direction",
+    "call.call_status": "call.status",
     "call.start_timestamp": "call.start_time",
     "call.end_timestamp": "call.end_time",
-    "call.transcript": "artifacts.transcript",
-    "event": "audit.event_type"
+    "call.metadata": "call.metadata",
+    "call.retell_llm_dynamic_variables": "custom.provider_specific.retell.llm_variables",
+    "event": "audit.event_type",
+    
+    # Call ended specific fields
+    "call.disconnection_reason": "call.end_reason",
+    "call.transcript": "artifacts.transcript.full_text",
+    "call.transcript_object": "artifacts.transcript.turns",
+    "call.transcript_with_tool_calls": "artifacts.transcript.turns_with_tools",
+    "call.recording_url": "artifacts.recording_url",
+    "call.opt_out_sensitive_data_storage": "consent.opt_out_sensitive_data",
+    
+    # Call analyzed specific fields (Post-Call Analysis)
+    "call.call_analysis.call_summary": "outcomes.analysis.summary",
+    "call.call_analysis.user_sentiment": "outcomes.analysis.sentiment.overall",
+    "call.call_analysis.call_successful": "outcomes.objective.success",
+    "call.call_analysis.user_talked": "outcomes.analysis.participation.user_talked",
+    "call.call_analysis.agent_talked": "outcomes.analysis.participation.agent_talked",
+    "call.call_analysis.in_voicemail": "outcomes.analysis.voicemail_detected",
+    "call.call_analysis.custom_analysis_data": "custom.provider_specific.retell.analysis_data",
+    "call.call_analysis": "outcomes.analysis"
 }
 ```
 

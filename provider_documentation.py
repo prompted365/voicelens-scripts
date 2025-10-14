@@ -99,6 +99,40 @@ class VoiceAIProviderRegistry:
                     WebhookEventType.CALL_ANALYZED
                 ],
                 webhook_schemas=[
+                    # CALL_STARTED Event Schema
+                    WebhookSchema(
+                        event_type=WebhookEventType.CALL_STARTED,
+                        required_fields=[
+                            "event", "call.call_id", "call.from_number", 
+                            "call.to_number", "call.direction", "call.start_timestamp",
+                            "call.agent_id", "call.call_status"
+                        ],
+                        optional_fields=[
+                            "call.metadata", "call.retell_llm_dynamic_variables"
+                        ],
+                        nested_objects={
+                            "call": ["call_id", "agent_id", "call_status", "metadata", "retell_llm_dynamic_variables"],
+                            "retell_llm_dynamic_variables": ["customer_name", "custom_fields"]
+                        },
+                        example_payload={
+                            "event": "call_started",
+                            "call": {
+                                "call_id": "Jabr9TXYYJHfvl6Syypi88rdAHYHmcq6",
+                                "agent_id": "oBeDLoLOeuAbiuaMFXRtDOLriTJ5tSxD",
+                                "from_number": "+12137771234",
+                                "to_number": "+12137771235",
+                                "direction": "inbound",
+                                "call_status": "registered",
+                                "start_timestamp": 1714608475945,
+                                "metadata": {},
+                                "retell_llm_dynamic_variables": {
+                                    "customer_name": "John Doe"
+                                }
+                            }
+                        }
+                    ),
+                    
+                    # CALL_ENDED Event Schema
                     WebhookSchema(
                         event_type=WebhookEventType.CALL_ENDED,
                         required_fields=[
@@ -108,37 +142,119 @@ class VoiceAIProviderRegistry:
                         ],
                         optional_fields=[
                             "call.transcript", "call.transcript_object", 
-                            "call.metadata", "call.call_analysis"
+                            "call.transcript_with_tool_calls", "call.metadata", 
+                            "call.retell_llm_dynamic_variables", "call.opt_out_sensitive_data_storage",
+                            "call.recording_url"
                         ],
                         nested_objects={
-                            "call": ["call_id", "agent_id", "call_status", "transcript", "metadata"],
-                            "transcript_object": ["role", "content", "timestamp"]
+                            "call": ["call_id", "agent_id", "call_status", "transcript", "transcript_object", 
+                                    "transcript_with_tool_calls", "metadata", "retell_llm_dynamic_variables"],
+                            "transcript_object": ["role", "content", "timestamp"],
+                            "transcript_with_tool_calls": ["role", "content", "timestamp", "tool_calls"]
                         },
                         example_payload={
                             "event": "call_ended",
                             "call": {
                                 "call_id": "Jabr9TXYYJHfvl6Syypi88rdAHYHmcq6",
+                                "agent_id": "oBeDLoLOeuAbiuaMFXRtDOLriTJ5tSxD",
+                                "from_number": "+12137771234",
+                                "to_number": "+12137771235",
+                                "direction": "inbound",
+                                "call_status": "registered",
+                                "start_timestamp": 1714608475945,
+                                "end_timestamp": 1714608491736,
+                                "disconnection_reason": "user_hangup",
+                                "transcript": "Agent: Hello, how can I help? User: I need help with my account.",
+                                "transcript_object": [
+                                    {"role": "agent", "content": "Hello, how can I help?", "timestamp": 1714608476000},
+                                    {"role": "user", "content": "I need help with my account.", "timestamp": 1714608480000}
+                                ],
+                                "metadata": {},
+                                "retell_llm_dynamic_variables": {
+                                    "customer_name": "John Doe"
+                                },
+                                "opt_out_sensitive_data_storage": False
+                            }
+                        }
+                    ),
+                    
+                    # CALL_ANALYZED Event Schema (Post-Call Analysis)
+                    WebhookSchema(
+                        event_type=WebhookEventType.CALL_ANALYZED,
+                        required_fields=[
+                            "event", "call.call_id", "call.call_analysis"
+                        ],
+                        optional_fields=[
+                            "call.agent_id", "call.from_number", "call.to_number", 
+                            "call.direction", "call.start_timestamp", "call.end_timestamp",
+                            "call.disconnection_reason", "call.transcript", "call.metadata"
+                        ],
+                        nested_objects={
+                            "call": ["call_id", "agent_id", "call_status", "call_analysis", "metadata"],
+                            "call_analysis": ["summary", "sentiment", "custom_analysis_data", 
+                                             "user_sentiment", "call_successful", "call_summary",
+                                             "in_voicemail", "user_talked", "agent_talked"]
+                        },
+                        example_payload={
+                            "event": "call_analyzed",
+                            "call": {
+                                "call_id": "Jabr9TXYYJHfvl6Syypi88rdAHYHmcq6",
+                                "agent_id": "oBeDLoLOeuAbiuaMFXRtDOLriTJ5tSxD",
                                 "from_number": "+12137771234",
                                 "to_number": "+12137771235",
                                 "direction": "inbound",
                                 "start_timestamp": 1714608475945,
                                 "end_timestamp": 1714608491736,
                                 "disconnection_reason": "user_hangup",
-                                "transcript": "Full conversation transcript...",
+                                "call_analysis": {
+                                    "call_summary": "Customer inquired about account balance and made a payment.",
+                                    "user_sentiment": "satisfied",
+                                    "call_successful": True,
+                                    "user_talked": True,
+                                    "agent_talked": True,
+                                    "in_voicemail": False,
+                                    "custom_analysis_data": {
+                                        "intent": "account_inquiry",
+                                        "resolution": "resolved",
+                                        "satisfaction_score": 0.85
+                                    }
+                                },
                                 "metadata": {}
                             }
                         }
                     )
                 ],
                 vcp_mapping_rules={
+                    # Common fields across all events
                     "call.call_id": "call.call_id",
+                    "call.agent_id": "call.agent_id",
                     "call.from_number": "call.from_",
                     "call.to_number": "call.to",
-                    "call.direction": "call.direction",  # Use new direction field
+                    "call.direction": "call.direction",
+                    "call.call_status": "call.status",
                     "call.start_timestamp": "call.start_time",
                     "call.end_timestamp": "call.end_time",
-                    "call.transcript": "artifacts.transcript",
-                    "event": "audit.event_type"
+                    "call.metadata": "call.metadata",
+                    "call.retell_llm_dynamic_variables": "custom.provider_specific.retell.llm_variables",
+                    "event": "audit.event_type",
+                    
+                    # Call ended specific fields
+                    "call.disconnection_reason": "call.end_reason",
+                    "call.transcript": "artifacts.transcript.full_text",
+                    "call.transcript_object": "artifacts.transcript.turns",
+                    "call.transcript_with_tool_calls": "artifacts.transcript.turns_with_tools",
+                    "call.recording_url": "artifacts.recording_url",
+                    "call.opt_out_sensitive_data_storage": "consent.opt_out_sensitive_data",
+                    
+                    # Call analyzed specific fields (Post-Call Analysis)
+                    "call.call_analysis.call_summary": "outcomes.analysis.summary",
+                    "call.call_analysis.user_sentiment": "outcomes.analysis.sentiment.overall",
+                    "call.call_analysis.call_successful": "outcomes.objective.success",
+                    "call.call_analysis.user_talked": "outcomes.analysis.participation.user_talked",
+                    "call.call_analysis.agent_talked": "outcomes.analysis.participation.agent_talked",
+                    "call.call_analysis.in_voicemail": "outcomes.analysis.voicemail_detected",
+                    "call.call_analysis.custom_analysis_data": "custom.provider_specific.retell.analysis_data",
+                    "call.call_analysis": "outcomes.analysis"
                 },
                 last_updated=datetime.now(timezone.utc)
             ),
@@ -515,14 +631,17 @@ class VCPMapper:
         self.registry = registry
     
     def map_to_vcp(self, provider_name: str, webhook_payload: Dict[str, Any]) -> Dict[str, Any]:
-        """Map provider webhook to VCP v0.4 format"""
+        """Map provider webhook to VCP v0.5 format with event-specific handling"""
         provider = self.registry.get_provider(provider_name)
         if not provider or not provider.vcp_mapping_rules:
             return {}
         
-        from vcp_v04_schema import VCPMessage, CallDirection, ConsentMethod, DisconnectReason
+        from vcp_v05_schema import VCPMessage
         
         vcp_data = {}
+        
+        # Get event type for event-specific processing
+        event_type = webhook_payload.get('event', 'unknown')
         
         # Apply mapping rules
         for provider_path, vcp_path in provider.vcp_mapping_rules.items():
@@ -554,13 +673,79 @@ class VCPMapper:
                     # Convert Vapi endedReason to VCP status
                     status = self._convert_vapi_ended_reason_to_status(value)
                     self._set_nested_value(vcp_data, vcp_path, status)
+                elif provider_name == "retell" and provider_path == "call.call_analysis.user_sentiment":
+                    # Convert Retell sentiment to structured format
+                    sentiment_data = {
+                        "overall": value,
+                        "confidence": 0.8,  # Default confidence for Retell analysis
+                        "source": "retell_post_call_analysis"
+                    }
+                    self._set_nested_value(vcp_data, vcp_path, sentiment_data)
+                elif provider_name == "retell" and provider_path == "call.transcript_object":
+                    # Transform Retell transcript_object to VCP turns format
+                    if isinstance(value, list):
+                        turns = []
+                        for turn in value:
+                            turn_data = {
+                                "speaker": turn.get("role", "unknown"),
+                                "content": turn.get("content", ""),
+                                "timestamp": turn.get("timestamp"),
+                                "confidence": 0.95  # Default high confidence for Retell
+                            }
+                            turns.append(turn_data)
+                        self._set_nested_value(vcp_data, vcp_path, turns)
+                    else:
+                        self._set_nested_value(vcp_data, vcp_path, value)
                 else:
                     self._set_nested_value(vcp_data, vcp_path, value)
         
-        # Create VCP v0.5 structure with defaults
+        # Create VCP v0.5 structure with defaults and event-specific handling
         now = datetime.now(timezone.utc)
         call_id = self._get_nested_value(vcp_data, 'call.call_id') or str(uuid.uuid4())
         session_id = self._get_nested_value(vcp_data, 'call.session_id') or f"sess_{provider_name}_{call_id[:8]}"
+        
+        # Event-specific VCP structure adjustments
+        if provider_name == "retell":
+            # Adjust outcomes based on event type
+            if event_type == "call_started":
+                # For call_started, we have minimal outcome data
+                outcomes_data = {
+                    "objective": {
+                        "status": "in_progress",
+                        "scored_criteria": [],
+                        "metrics": {}
+                    },
+                    **vcp_data.get('outcomes', {})
+                }
+            elif event_type == "call_analyzed":
+                # For call_analyzed, we have rich analysis data
+                analysis_data = vcp_data.get('outcomes', {}).get('analysis', {})
+                outcomes_data = {
+                    "objective": {
+                        "status": "completed" if analysis_data.get('call_successful') else "failed",
+                        "success": analysis_data.get('call_successful', False),
+                        "scored_criteria": [],
+                        "metrics": {
+                            "user_participation": analysis_data.get('participation', {}).get('user_talked', False),
+                            "agent_participation": analysis_data.get('participation', {}).get('agent_talked', False),
+                            "voicemail_detected": analysis_data.get('voicemail_detected', False)
+                        }
+                    },
+                    "analysis": analysis_data,
+                    **vcp_data.get('outcomes', {})
+                }
+            else:
+                # Default for call_ended and others
+                outcomes_data = {
+                    "objective": {
+                        "status": "completed",
+                        "scored_criteria": [],
+                        "metrics": {}
+                    },
+                    **vcp_data.get('outcomes', {})
+                }
+        else:
+            outcomes_data = vcp_data.get('outcomes', {})
         
         vcp_message = {
             "vcp_version": "0.5",
@@ -595,7 +780,7 @@ class VCPMapper:
                         "roles": {},
                         "kpis": {}
                     },
-                    **vcp_data.get('outcomes', {})
+                    **outcomes_data
                 },
                 "hcr": {
                     "audience": "system",
@@ -631,11 +816,27 @@ class VCPMapper:
             },
             "audit": {
                 "received_at": now.isoformat(),
-                "schema_version": "0.5"
+                "schema_version": "0.5",
+                "event_type": event_type,
+                "provider_event_sequence": self._determine_event_sequence(event_type),
+                "processing_metadata": {
+                    "webhook_type": event_type,
+                    "provider": provider_name,
+                    "vcp_mapper_version": "v0.5_enhanced"
+                }
             }
         }
         
         return vcp_message
+    
+    def _determine_event_sequence(self, event_type: str) -> str:
+        """Determine the sequence number for Retell events"""
+        sequence_map = {
+            "call_started": "1_pre_call",
+            "call_ended": "2_post_call", 
+            "call_analyzed": "3_post_call_analysis"
+        }
+        return sequence_map.get(event_type, "unknown")
     
     def _get_nested_value(self, data: Dict[str, Any], path: str) -> Any:
         """Get value from nested dictionary using dot notation"""

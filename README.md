@@ -81,7 +81,7 @@ v03_compatible = example.to_v03_compatible()
 
 ### 2. Provider Webhook Integration
 
-Unified webhook processing for major voice AI providers:
+Unified webhook processing for major voice AI providers with comprehensive event handling:
 
 ```python
 from provider_documentation import VoiceAIProviderRegistry, VCPMapper
@@ -95,11 +95,20 @@ vcp_result = mapper.map_to_vcp("retell", webhook_payload)
 ```
 
 **Supported Providers:**
-- **Retell AI**: Complete webhook and authentication support
+- **Retell AI**: Complete webhook and authentication support with 3 event types:
+  - `call_started`: Call initiation with agent and customer details
+  - `call_ended`: Call completion with transcript and metadata  
+  - `call_analyzed`: Post-call analysis with sentiment and success metrics
 - **Bland AI**: Post-call transcription and analysis webhooks
 - **Vapi**: End-of-call reports and status updates
-- **ElevenLabs**: Voice synthesis completion webhooks
+- **ElevenLabs**: Voice synthesis completion webhooks with HMAC signature validation
 - **OpenAI Realtime API**: Conversation and status updates
+
+**Enhanced Webhook Features:**
+- **Multi-Event Support**: Each provider supports multiple webhook event types with distinct schemas
+- **Signature Validation**: Automated webhook signature verification using provider-specific methods
+- **Event-Specific Mapping**: Different VCP mapping rules based on webhook event type
+- **Rich Schema Documentation**: Complete field mapping and validation rules for all event types
 
 ### 3. Provider Monitoring System
 
@@ -128,15 +137,57 @@ health = monitor.check_provider_health("retell")
 - Slack/email notifications
 - Historical change tracking
 
-### 4. Operations Dashboard
+### 4. Webhook Processing in Production
+
+Robust webhook handling with Flask application:
+
+```python
+from flask import Flask, request, jsonify
+from provider_documentation import VoiceAIProviderRegistry, VCPMapper
+from vcp_v05_schema import VCPValidator
+
+app = Flask(__name__)
+registry = VoiceAIProviderRegistry()
+mapper = VCPMapper(registry)
+validator = VCPValidator()
+
+@app.route('/webhook/<provider>', methods=['POST'])
+def handle_webhook(provider):
+    payload = request.get_json()
+    signature = request.headers.get('x-retell-signature')  # Provider-specific header
+    
+    # Validate webhook signature
+    if not registry.validate_webhook_signature(provider, payload, signature):
+        return jsonify({'error': 'Invalid signature'}), 401
+    
+    # Transform to VCP v0.5
+    vcp_message = mapper.map_to_vcp(provider, payload)
+    
+    # Process based on event type
+    event_type = payload.get('event', 'unknown')
+    if event_type == 'call_started':
+        # Handle call initiation
+        process_call_start(vcp_message)
+    elif event_type == 'call_ended':
+        # Handle call completion
+        process_call_end(vcp_message)
+    elif event_type == 'call_analyzed':
+        # Handle post-call analysis
+        process_call_analysis(vcp_message)
+    
+    return jsonify({'status': 'processed', 'event': event_type})
+```
+
+### 5. Operations Dashboard
 
 Web-based management interface with comprehensive tools:
 
 - **Provider Management**: View and compare all voice AI providers
-- **Webhook Testing**: Test webhook transformations in real-time
-- **VCP Validation**: Validate and transform VCP messages
-- **Analytics**: Performance metrics and success rates
+- **Webhook Testing**: Test webhook transformations in real-time with all event types
+- **VCP Validation**: Validate and transform VCP messages with v0.5 support
+- **Analytics**: Performance metrics and success rates per event type
 - **Change Monitoring**: Real-time provider change notifications
+- **Signature Testing**: Test webhook signature validation for each provider
 
 ## Advanced Usage
 
@@ -458,11 +509,15 @@ pytest --cov=. --cov-report=html
 
 ### v0.5.0 (Current)
 - ✅ Complete VCP v0.5 schema implementation
-- ✅ Provider documentation for 5+ major providers
+- ✅ Provider documentation for 5+ major providers with comprehensive webhook support
+- ✅ **Enhanced Retell AI Integration**: Full support for 3 webhook event types (`call_started`, `call_ended`, `call_analyzed`)
+- ✅ **Multi-Event Webhook Processing**: Event-specific schemas and VCP mapping rules
+- ✅ **Webhook Signature Validation**: Automated security verification for all providers
 - ✅ Advanced monitoring with change detection
-- ✅ Operations dashboard with analytics
+- ✅ Operations dashboard with analytics and webhook testing
 - ✅ Full backward compatibility with v0.3
 - ✅ Comprehensive deployment guides
+- ✅ Production-ready Flask webhook handler with event routing
 
 ### v0.4.0 (Deprecated)
 - ⚠️ Incomplete stub implementation (migrated to v0.5)

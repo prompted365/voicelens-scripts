@@ -1,6 +1,6 @@
 # VoiceLens Scripts - Complete Documentation
 
-**Generated**: 2025-10-14 16:34:27 UTC  
+**Generated**: 2025-10-14 23:17:27 UTC  
 **Total Files**: 20  
 **Purpose**: Complete documentation context for LLM consumption
 
@@ -45,7 +45,7 @@ reports/
 📄 FILE: docs/README.md
 📝 TITLE: Voice Context Protocol (VCP) System - Complete Documentation
 📊 SIZE: 16,721 bytes
-⏰ PROCESSED: 2025-10-14 16:34:27 UTC
+⏰ PROCESSED: 2025-10-14 23:17:27 UTC
 ================================================================================
 
 # Voice Context Protocol (VCP) System - Complete Documentation
@@ -546,7 +546,7 @@ This documentation and reference implementation are provided under the MIT Licen
 📄 FILE: docs/VCP_SYSTEM_OVERVIEW.md
 📝 TITLE: Voice Context Protocol (VCP) System Documentation
 📊 SIZE: 25,309 bytes
-⏰ PROCESSED: 2025-10-14 16:34:27 UTC
+⏰ PROCESSED: 2025-10-14 23:17:27 UTC
 ================================================================================
 
 # Voice Context Protocol (VCP) System Documentation
@@ -1269,7 +1269,7 @@ This comprehensive documentation provides everything needed to understand, imple
 📄 FILE: docs/VCP_SCHEMA_SPECIFICATION.md
 📝 TITLE: VCP Schema v0.5 - Complete Specification
 📊 SIZE: 24,347 bytes
-⏰ PROCESSED: 2025-10-14 16:34:27 UTC
+⏰ PROCESSED: 2025-10-14 23:17:27 UTC
 ================================================================================
 
 # VCP Schema v0.5 - Complete Specification
@@ -1885,8 +1885,8 @@ This comprehensive specification provides everything needed to implement VCP v0.
 ================================================================================
 📄 FILE: docs/PROVIDER_INTEGRATION_GUIDE.md
 📝 TITLE: Provider Integration & Mapping Implementation Guide
-📊 SIZE: 27,147 bytes
-⏰ PROCESSED: 2025-10-14 16:34:27 UTC
+📊 SIZE: 30,868 bytes
+⏰ PROCESSED: 2025-10-14 23:17:27 UTC
 ================================================================================
 
 # Provider Integration & Mapping Implementation Guide
@@ -1938,7 +1938,7 @@ class VoiceAIProviderRegistry:
 
 ### 1. Retell AI Integration
 
-**Overview**: Retell AI provides conversational voice AI with robust webhook support and signature validation.
+**Overview**: Retell AI provides conversational voice AI with comprehensive webhook support for 3 event types: `call_started`, `call_ended`, and `call_analyzed` with robust signature validation.
 
 #### Configuration
 
@@ -1954,6 +1954,22 @@ class ProviderInfo:
     status_page: str = "https://status.retellai.com"
     changelog_url: str = "https://www.retellai.com/changelog"
 ```
+#### Supported Events
+
+Retell AI provides three distinct webhook event types, each with specific schemas and mapping rules:
+
+1. **`call_started`**: Triggered when a call initiates
+   - Contains call setup information and initial metadata
+   - Maps to VCP session initialization
+
+2. **`call_ended`**: Triggered when a call completes
+   - Contains complete transcript, duration, and call metadata
+   - Maps to VCP call completion with artifacts
+
+3. **`call_analyzed`**: Triggered when post-call analysis is complete
+   - Contains sentiment analysis, success metrics, and custom analysis data
+   - Maps to VCP outcomes and analysis data
+
 #### Authentication
 
 ```python
@@ -1965,40 +1981,107 @@ webhook_auth = WebhookAuthConfig(
     validation_example="Retell.verify(payload, api_key, signature)"
 )
 ```
-#### Webhook Schema
+#### Webhook Schemas
 
+Retell AI provides three distinct webhook schemas:
+
+**1. Call Started Schema**
 ```python
-webhook_schemas = [
-    WebhookSchema(
-        event_type=WebhookEventType.CALL_ENDED,
-        required_fields=[
-            "event", "call.call_id", "call.from_number", 
-            "call.to_number", "call.direction", "call.start_timestamp",
-            "call.end_timestamp", "call.disconnection_reason"
-        ],
-        optional_fields=[
-            "call.transcript", "call.transcript_object", 
-            "call.metadata", "call.call_analysis"
-        ],
-        nested_objects={
-            "call": ["call_id", "agent_id", "call_status", "transcript", "metadata"],
-            "transcript_object": ["role", "content", "timestamp"]
-        }
-    )
-]
+WebhookSchema(
+    event_type=WebhookEventType.CALL_STARTED,
+    required_fields=[
+        "event", "call.call_id", "call.from_number", 
+        "call.to_number", "call.direction", "call.start_timestamp",
+        "call.agent_id", "call.call_status"
+    ],
+    optional_fields=[
+        "call.metadata", "call.retell_llm_dynamic_variables"
+    ],
+    nested_objects={
+        "call": ["call_id", "agent_id", "call_status", "metadata", "retell_llm_dynamic_variables"],
+        "retell_llm_dynamic_variables": ["customer_name", "custom_fields"]
+    }
+)
+```
+**2. Call Ended Schema**
+```python
+WebhookSchema(
+    event_type=WebhookEventType.CALL_ENDED,
+    required_fields=[
+        "event", "call.call_id", "call.from_number", 
+        "call.to_number", "call.direction", "call.start_timestamp",
+        "call.end_timestamp", "call.disconnection_reason"
+    ],
+    optional_fields=[
+        "call.transcript", "call.transcript_object", 
+        "call.transcript_with_tool_calls", "call.metadata", 
+        "call.retell_llm_dynamic_variables", "call.opt_out_sensitive_data_storage",
+        "call.recording_url"
+    ],
+    nested_objects={
+        "call": ["call_id", "agent_id", "call_status", "transcript", "transcript_object", 
+                "transcript_with_tool_calls", "metadata", "retell_llm_dynamic_variables"],
+        "transcript_object": ["role", "content", "timestamp"],
+        "transcript_with_tool_calls": ["role", "content", "timestamp", "tool_calls"]
+    }
+)
+```
+**3. Call Analyzed Schema** 
+```python
+WebhookSchema(
+    event_type=WebhookEventType.CALL_ANALYZED,
+    required_fields=[
+        "event", "call.call_id", "call.call_analysis"
+    ],
+    optional_fields=[
+        "call.agent_id", "call.from_number", "call.to_number", 
+        "call.direction", "call.start_timestamp", "call.end_timestamp",
+        "call.disconnection_reason", "call.transcript", "call.metadata"
+    ],
+    nested_objects={
+        "call": ["call_id", "agent_id", "call_status", "call_analysis", "metadata"],
+        "call_analysis": ["summary", "sentiment", "custom_analysis_data", 
+                         "user_sentiment", "call_successful", "call_summary",
+                         "in_voicemail", "user_talked", "agent_talked"]
+    }
+)
 ```
 #### VCP Mapping Rules
 
+Comprehensive mapping rules supporting all three Retell webhook event types:
+
 ```python
 vcp_mapping_rules = {
+    # Common fields across all events
     "call.call_id": "call.call_id",
+    "call.agent_id": "call.agent_id",
     "call.from_number": "call.from_",
     "call.to_number": "call.to",
-    "call.direction": "call.direction",  # Uses new direction field
+    "call.direction": "call.direction",
+    "call.call_status": "call.status",
     "call.start_timestamp": "call.start_time",
     "call.end_timestamp": "call.end_time",
-    "call.transcript": "artifacts.transcript",
-    "event": "audit.event_type"
+    "call.metadata": "call.metadata",
+    "call.retell_llm_dynamic_variables": "custom.provider_specific.retell.llm_variables",
+    "event": "audit.event_type",
+    
+    # Call ended specific fields
+    "call.disconnection_reason": "call.end_reason",
+    "call.transcript": "artifacts.transcript.full_text",
+    "call.transcript_object": "artifacts.transcript.turns",
+    "call.transcript_with_tool_calls": "artifacts.transcript.turns_with_tools",
+    "call.recording_url": "artifacts.recording_url",
+    "call.opt_out_sensitive_data_storage": "consent.opt_out_sensitive_data",
+    
+    # Call analyzed specific fields (Post-Call Analysis)
+    "call.call_analysis.call_summary": "outcomes.analysis.summary",
+    "call.call_analysis.user_sentiment": "outcomes.analysis.sentiment.overall",
+    "call.call_analysis.call_successful": "outcomes.objective.success",
+    "call.call_analysis.user_talked": "outcomes.analysis.participation.user_talked",
+    "call.call_analysis.agent_talked": "outcomes.analysis.participation.agent_talked",
+    "call.call_analysis.in_voicemail": "outcomes.analysis.voicemail_detected",
+    "call.call_analysis.custom_analysis_data": "custom.provider_specific.retell.analysis_data",
+    "call.call_analysis": "outcomes.analysis"
 }
 ```
 #### Example Webhook Payload
@@ -2679,7 +2762,7 @@ This comprehensive guide provides everything needed to integrate any voice AI pr
 📄 FILE: docs/DEPLOYMENT_OPERATIONS_GUIDE.md
 📝 TITLE: VCP System Deployment & Operations Guide
 📊 SIZE: 24,088 bytes
-⏰ PROCESSED: 2025-10-14 16:34:27 UTC
+⏰ PROCESSED: 2025-10-14 23:17:27 UTC
 ================================================================================
 
 # VCP System Deployment & Operations Guide
@@ -3577,8 +3660,8 @@ This comprehensive deployment and operations guide provides everything needed to
 ================================================================================
 📄 FILE: README.md
 📝 TITLE: VoiceLens Scripts
-📊 SIZE: 13,125 bytes
-⏰ PROCESSED: 2025-10-14 16:34:27 UTC
+📊 SIZE: 15,725 bytes
+⏰ PROCESSED: 2025-10-14 23:17:27 UTC
 ================================================================================
 
 # VoiceLens Scripts
@@ -3661,7 +3744,7 @@ v03_compatible = example.to_v03_compatible()
 ```
 ### 2. Provider Webhook Integration
 
-Unified webhook processing for major voice AI providers:
+Unified webhook processing for major voice AI providers with comprehensive event handling:
 
 ```python
 from provider_documentation import VoiceAIProviderRegistry, VCPMapper
@@ -3674,11 +3757,20 @@ vcp_result = mapper.map_to_vcp("retell", webhook_payload)
 # Returns standardized VCP v0.5 structure
 ```
 **Supported Providers:**
-- **Retell AI**: Complete webhook and authentication support
+- **Retell AI**: Complete webhook and authentication support with 3 event types:
+  - `call_started`: Call initiation with agent and customer details
+  - `call_ended`: Call completion with transcript and metadata  
+  - `call_analyzed`: Post-call analysis with sentiment and success metrics
 - **Bland AI**: Post-call transcription and analysis webhooks
 - **Vapi**: End-of-call reports and status updates
-- **ElevenLabs**: Voice synthesis completion webhooks
+- **ElevenLabs**: Voice synthesis completion webhooks with HMAC signature validation
 - **OpenAI Realtime API**: Conversation and status updates
+
+**Enhanced Webhook Features:**
+- **Multi-Event Support**: Each provider supports multiple webhook event types with distinct schemas
+- **Signature Validation**: Automated webhook signature verification using provider-specific methods
+- **Event-Specific Mapping**: Different VCP mapping rules based on webhook event type
+- **Rich Schema Documentation**: Complete field mapping and validation rules for all event types
 
 ### 3. Provider Monitoring System
 
@@ -3706,15 +3798,56 @@ health = monitor.check_provider_health("retell")
 - Slack/email notifications
 - Historical change tracking
 
-### 4. Operations Dashboard
+### 4. Webhook Processing in Production
+
+Robust webhook handling with Flask application:
+
+```python
+from flask import Flask, request, jsonify
+from provider_documentation import VoiceAIProviderRegistry, VCPMapper
+from vcp_v05_schema import VCPValidator
+
+app = Flask(__name__)
+registry = VoiceAIProviderRegistry()
+mapper = VCPMapper(registry)
+validator = VCPValidator()
+
+@app.route('/webhook/<provider>', methods=['POST'])
+def handle_webhook(provider):
+    payload = request.get_json()
+    signature = request.headers.get('x-retell-signature')  # Provider-specific header
+    
+    # Validate webhook signature
+    if not registry.validate_webhook_signature(provider, payload, signature):
+        return jsonify({'error': 'Invalid signature'}), 401
+    
+    # Transform to VCP v0.5
+    vcp_message = mapper.map_to_vcp(provider, payload)
+    
+    # Process based on event type
+    event_type = payload.get('event', 'unknown')
+    if event_type == 'call_started':
+        # Handle call initiation
+        process_call_start(vcp_message)
+    elif event_type == 'call_ended':
+        # Handle call completion
+        process_call_end(vcp_message)
+    elif event_type == 'call_analyzed':
+        # Handle post-call analysis
+        process_call_analysis(vcp_message)
+    
+    return jsonify({'status': 'processed', 'event': event_type})
+```
+### 5. Operations Dashboard
 
 Web-based management interface with comprehensive tools:
 
 - **Provider Management**: View and compare all voice AI providers
-- **Webhook Testing**: Test webhook transformations in real-time
-- **VCP Validation**: Validate and transform VCP messages
-- **Analytics**: Performance metrics and success rates
+- **Webhook Testing**: Test webhook transformations in real-time with all event types
+- **VCP Validation**: Validate and transform VCP messages with v0.5 support
+- **Analytics**: Performance metrics and success rates per event type
 - **Change Monitoring**: Real-time provider change notifications
+- **Signature Testing**: Test webhook signature validation for each provider
 
 ## Advanced Usage
 
@@ -4023,11 +4156,15 @@ pytest --cov=. --cov-report=html
 
 ### v0.5.0 (Current)
 - ✅ Complete VCP v0.5 schema implementation
-- ✅ Provider documentation for 5+ major providers
+- ✅ Provider documentation for 5+ major providers with comprehensive webhook support
+- ✅ **Enhanced Retell AI Integration**: Full support for 3 webhook event types (`call_started`, `call_ended`, `call_analyzed`)
+- ✅ **Multi-Event Webhook Processing**: Event-specific schemas and VCP mapping rules
+- ✅ **Webhook Signature Validation**: Automated security verification for all providers
 - ✅ Advanced monitoring with change detection
-- ✅ Operations dashboard with analytics
+- ✅ Operations dashboard with analytics and webhook testing
 - ✅ Full backward compatibility with v0.3
 - ✅ Comprehensive deployment guides
+- ✅ Production-ready Flask webhook handler with event routing
 
 ### v0.4.0 (Deprecated)
 - ⚠️ Incomplete stub implementation (migrated to v0.5)
@@ -4060,7 +4197,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 📄 FILE: ASSISTABLE_AI_INTEGRATION.md
 📝 TITLE: Assistable.ai Integration with VCP v0.5
 📊 SIZE: 10,299 bytes
-⏰ PROCESSED: 2025-10-14 16:34:27 UTC
+⏰ PROCESSED: 2025-10-14 23:17:27 UTC
 ================================================================================
 
 # Assistable.ai Integration with VCP v0.5
@@ -4399,8 +4536,8 @@ For Assistable.ai integration issues:
 ================================================================================
 📄 FILE: DEPLOYMENT.md
 📝 TITLE: VoiceLens Scripts Deployment Guide
-📊 SIZE: 16,308 bytes
-⏰ PROCESSED: 2025-10-14 16:34:27 UTC
+📊 SIZE: 17,590 bytes
+⏰ PROCESSED: 2025-10-14 23:17:27 UTC
 ================================================================================
 
 # VoiceLens Scripts Deployment Guide
@@ -4411,7 +4548,8 @@ This guide covers deploying the VoiceLens voice AI provider monitoring and VCP o
 
 The VoiceLens Scripts system provides:
 - **Voice Context Protocol (VCP) v0.5**: Unified schema for voice AI interactions
-- **Provider Documentation**: Webhook mappings for major voice AI providers
+- **Provider Documentation**: Webhook mappings for major voice AI providers with comprehensive event support
+- **Webhook Processing**: Production-ready Flask webhook handler with signature validation
 - **Provider Monitoring**: Change detection and health monitoring system
 - **Operations Dashboard**: Web-based management interface
 - **VCP Validation**: Schema validation and transformation utilities
@@ -4510,6 +4648,19 @@ BLAND_API_KEY=your-bland-api-key
 VAPI_API_KEY=your-vapi-api-key
 ELEVENLABS_API_KEY=your-elevenlabs-api-key
 OPENAI_API_KEY=your-openai-api-key
+
+# Webhook Processing Configuration
+WEBHOOK_BASE_URL=https://yourdomain.com/webhook
+WEBHOOK_SECRET_KEY=your-webhook-secret-key
+RETELL_WEBHOOK_SECRET=your-retell-webhook-secret
+ELEVENLABS_WEBHOOK_SECRET=your-elevenlabs-webhook-secret
+
+# Webhook Event Processing
+PROCESS_CALL_STARTED=true
+PROCESS_CALL_ENDED=true
+PROCESS_CALL_ANALYZED=true
+STORE_WEBHOOK_PAYLOADS=true
+WEBHOOK_RATE_LIMIT=100  # requests per minute
 
 # Security (production)
 ALLOWED_HOSTS=localhost,127.0.0.1,yourdomain.com
@@ -4950,6 +5101,27 @@ server {
         proxy_pass http://127.0.0.1:5000;
         access_log off;
     }
+    
+    # Webhook endpoints (special handling)
+    location /webhook/ {
+        proxy_pass http://127.0.0.1:5000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        
+        # Webhook-specific settings
+        proxy_buffering off;
+        proxy_request_buffering off;
+        client_max_body_size 10M;
+        
+        # Preserve original headers for signature validation
+        proxy_pass_request_headers on;
+        proxy_set_header X-Original-URI $request_uri;
+        
+        # Rate limiting for webhook endpoints
+        limit_req zone=webhook_limit burst=50 nodelay;
+    }
 }
 ```
 ## Monitoring & Maintenance
@@ -5103,7 +5275,7 @@ For additional help, consult the individual module documentation:
 📄 FILE: CONTRIBUTING.md
 📝 TITLE: Contributing to VoiceLens Scripts
 📊 SIZE: 3,973 bytes
-⏰ PROCESSED: 2025-10-14 16:34:27 UTC
+⏰ PROCESSED: 2025-10-14 23:17:27 UTC
 ================================================================================
 
 # Contributing to VoiceLens Scripts
@@ -5258,7 +5430,7 @@ Feel free to open a Discussion or reach out to the maintainers. We're here to he
 📄 FILE: VCP_WORKING_GROUPS_STRUCTURE.md
 📝 TITLE: VCP Working Groups Structure & Operations
 📊 SIZE: 16,758 bytes
-⏰ PROCESSED: 2025-10-14 16:34:27 UTC
+⏰ PROCESSED: 2025-10-14 23:17:27 UTC
 ================================================================================
 
 # VCP Working Groups Structure & Operations
@@ -5767,7 +5939,7 @@ This working group structure provides VCP with the organizational foundation nec
 📄 FILE: USAGE.md
 📝 TITLE: VoiceLens Scripts Usage Guide
 📊 SIZE: 7,009 bytes
-⏰ PROCESSED: 2025-10-14 16:34:27 UTC
+⏰ PROCESSED: 2025-10-14 23:17:27 UTC
 ================================================================================
 
 # VoiceLens Scripts Usage Guide
@@ -6019,7 +6191,7 @@ python -m voicelens_seeder.cli generate baseline --help
 📄 FILE: VCP_GOVERNANCE_EXECUTIVE_SUMMARY.md
 📝 TITLE: VCP Governance Executive Summary & Implementation Roadmap
 📊 SIZE: 12,666 bytes
-⏰ PROCESSED: 2025-10-14 16:34:27 UTC
+⏰ PROCESSED: 2025-10-14 23:17:27 UTC
 ================================================================================
 
 # VCP Governance Executive Summary & Implementation Roadmap
@@ -6293,7 +6465,7 @@ The governance framework outlined here leverages proven patterns from successful
 📄 FILE: VCP_V0.5_CHANGELOG.md
 📝 TITLE: Voice Context Protocol (VCP) v0.5 Changelog & Migration Guide
 📊 SIZE: 10,346 bytes
-⏰ PROCESSED: 2025-10-14 16:34:27 UTC
+⏰ PROCESSED: 2025-10-14 23:17:27 UTC
 ================================================================================
 
 # Voice Context Protocol (VCP) v0.5 Changelog & Migration Guide
@@ -6600,7 +6772,7 @@ Starting with v1.0, changes will follow:
 📄 FILE: README_ENVIRONMENT.md
 📝 TITLE: VoiceLens Environment Management
 📊 SIZE: 3,408 bytes
-⏰ PROCESSED: 2025-10-14 16:34:27 UTC
+⏰ PROCESSED: 2025-10-14 23:17:27 UTC
 ================================================================================
 
 # VoiceLens Environment Management
@@ -6744,7 +6916,7 @@ python ensure_venv.py || exit 1
 📄 FILE: CONTACT-US.md
 📝 TITLE: Contact Us
 📊 SIZE: 3,033 bytes
-⏰ PROCESSED: 2025-10-14 16:34:27 UTC
+⏰ PROCESSED: 2025-10-14 23:17:27 UTC
 ================================================================================
 
 # Contact Us
@@ -6833,7 +7005,7 @@ For immediate assistance, please email: [info@e.integrate.cloud](mailto:info@e.i
 📄 FILE: HANDOVER_GUIDE.md
 📝 TITLE: VoiceLens Dataset Generation & Delivery Handover Guide
 📊 SIZE: 8,369 bytes
-⏰ PROCESSED: 2025-10-14 16:34:27 UTC
+⏰ PROCESSED: 2025-10-14 23:17:27 UTC
 ================================================================================
 
 # VoiceLens Dataset Generation & Delivery Handover Guide
@@ -7077,7 +7249,7 @@ All operations are fully reproducible with the provided seeds and commands. Stor
 📄 FILE: VCP_IMPLEMENTATION_CONSISTENCY_FRAMEWORK.md
 📝 TITLE: VCP Implementation Consistency Framework
 📊 SIZE: 16,955 bytes
-⏰ PROCESSED: 2025-10-14 16:34:27 UTC
+⏰ PROCESSED: 2025-10-14 23:17:27 UTC
 ================================================================================
 
 # VCP Implementation Consistency Framework
@@ -7573,7 +7745,7 @@ This Implementation Consistency Framework ensures VCP maintains its integrity as
 📄 FILE: VCP_GOVERNANCE_CHARTER.md
 📝 TITLE: Voice Context Protocol (VCP) Governance Charter
 📊 SIZE: 15,151 bytes
-⏰ PROCESSED: 2025-10-14 16:34:27 UTC
+⏰ PROCESSED: 2025-10-14 23:17:27 UTC
 ================================================================================
 
 # Voice Context Protocol (VCP) Governance Charter
@@ -7949,7 +8121,7 @@ This governance charter establishes VCP as a mature, professionally-managed open
 📄 FILE: LOGISTICS.md
 📝 TITLE: Community Logistics & Sync
 📊 SIZE: 6,034 bytes
-⏰ PROCESSED: 2025-10-14 16:34:27 UTC
+⏰ PROCESSED: 2025-10-14 23:17:27 UTC
 ================================================================================
 
 # Community Logistics & Sync
@@ -8133,7 +8305,7 @@ For questions about community logistics or to volunteer for coordination roles, 
 📄 FILE: reports/quality.md
 📝 TITLE: VoiceLens Dataset Quality Assessment Report
 📊 SIZE: 5,549 bytes
-⏰ PROCESSED: 2025-10-14 16:34:27 UTC
+⏰ PROCESSED: 2025-10-14 23:17:27 UTC
 ================================================================================
 
 # VoiceLens Dataset Quality Assessment Report
@@ -8282,19 +8454,19 @@ The VoiceAI4HVAC dataset delivery exceeded all quality targets with perfect exec
 ================================================================================
 
 **Total Files Processed**: 20
-**Total Content Size**: 266,595 bytes (260.3 KB)
-**Generated At**: 2025-10-14 16:34:27 UTC
+**Total Content Size**: 274,198 bytes (267.8 KB)
+**Generated At**: 2025-10-14 23:17:27 UTC
 
 ## Files Included:
 
 - **docs/README.md** - Voice Context Protocol (VCP) System - Complete Documentation (16,721 bytes)
 - **docs/VCP_SYSTEM_OVERVIEW.md** - Voice Context Protocol (VCP) System Documentation (25,309 bytes)
 - **docs/VCP_SCHEMA_SPECIFICATION.md** - VCP Schema v0.5 - Complete Specification (24,347 bytes)
-- **docs/PROVIDER_INTEGRATION_GUIDE.md** - Provider Integration & Mapping Implementation Guide (27,147 bytes)
+- **docs/PROVIDER_INTEGRATION_GUIDE.md** - Provider Integration & Mapping Implementation Guide (30,868 bytes)
 - **docs/DEPLOYMENT_OPERATIONS_GUIDE.md** - VCP System Deployment & Operations Guide (24,088 bytes)
-- **README.md** - VoiceLens Scripts (13,125 bytes)
+- **README.md** - VoiceLens Scripts (15,725 bytes)
 - **ASSISTABLE_AI_INTEGRATION.md** - Assistable.ai Integration with VCP v0.5 (10,299 bytes)
-- **DEPLOYMENT.md** - VoiceLens Scripts Deployment Guide (16,308 bytes)
+- **DEPLOYMENT.md** - VoiceLens Scripts Deployment Guide (17,590 bytes)
 - **CONTRIBUTING.md** - Contributing to VoiceLens Scripts (3,973 bytes)
 - **VCP_WORKING_GROUPS_STRUCTURE.md** - VCP Working Groups Structure & Operations (16,758 bytes)
 - **USAGE.md** - VoiceLens Scripts Usage Guide (7,009 bytes)
@@ -8316,4 +8488,4 @@ and operational procedures.*
 
 **Repository**: https://github.com/prompted365/voicelens-scripts
 **Documentation Directory**: docs/
-**Last Updated**: 2025-10-14 16:34:27 UTC
+**Last Updated**: 2025-10-14 23:17:27 UTC
