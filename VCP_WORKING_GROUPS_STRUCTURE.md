@@ -1,5 +1,5 @@
 # VCP Working Groups Structure & Operations
-**Version 1.0 | October 2024**
+**Version 1.0 | October 2025**
 
 ## Overview
 

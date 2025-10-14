@@ -1,5 +1,5 @@
 # Voice Context Protocol (VCP) Governance Charter
-**Version 1.0 | October 2024**
+**Version 1.0 | October 2025**
 
 ## Executive Summary
 
@@ -285,9 +285,9 @@ vcp-compatibility-tests/
 ## 9. Foundation Transition
 
 ### 9.1 Transition Timeline
-- **2024 Q4**: Current governance charter implementation
-- **2025 Q2**: Foundation evaluation and selection
-- **2025 Q4**: Foundation transition (if warranted by adoption)
+- **2025 Q4**: Current governance charter implementation
+- **2026 Q2**: Foundation evaluation and selection
+- **2026 Q4**: Foundation transition (if warranted by adoption)
 
 ### 9.2 Foundation Criteria
 - **Adoption Threshold**: 1000+ production deployments
@@ -357,8 +357,8 @@ vcp-compatibility-tests/
 
 This governance charter establishes VCP as a mature, professionally-managed open standard with coordinated multi-language implementations. The framework balances implementation flexibility with specification consistency, ensuring VCP's continued evolution as the definitive voice AI interoperability protocol.
 
-**Effective Date**: October 14, 2024
-**Next Review**: April 14, 2025
+**Effective Date**: October 14, 2025
+**Next Review**: April 14, 2026
 **Version**: 1.0
 
 ---

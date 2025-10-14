@@ -442,7 +442,7 @@ def create_example_v05_message() -> VCPMessage:
                         invoked_at=call_start.replace(minute=call_start.minute + 1),
                         duration_ms=2300,
                         success=True,
-                        metadata={"appointment_type": "consultation", "scheduled_for": "2025-10-15T14:00:00Z"}
+                        metadata={"appointment_type": "consultation", "scheduled_for": "2025-10-16T14:00:00Z"}
                     ),
                     CapabilityInvocation(
                         capability_id="send_confirmation_email",
